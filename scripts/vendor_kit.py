@@ -55,6 +55,34 @@ def _copy_from(source_repo: Path, sha: str, dest: Path) -> None:
     # __pycache__ is not part of the pin.
     for junk in dest.rglob("__pycache__"):
         shutil.rmtree(junk, ignore_errors=True)
+    normalised = _normalise_newlines(dest)
+    if normalised:
+        print(f"normalised line endings in {normalised} file(s) to LF")
+
+
+#: Extensions whose content is text and must be pinned in canonical LF form.
+TEXT_SUFFIXES = (".py", ".json", ".yaml", ".yml", ".md", ".txt", ".cfg", ".ini")
+
+
+def _normalise_newlines(dest: Path) -> int:
+    """Rewrite extracted text files with LF endings.
+
+    ``git archive`` honours the local core.autocrlf, so running --sync on Windows
+    extracts CRLF and running it on Linux extracts LF -- producing two different
+    locks for the same commit, and a CI failure that looks like someone edited
+    every vendored file. The pin is over content, not over the line-ending
+    convention of whoever last ran the sync.
+    """
+    changed = 0
+    for path in sorted(dest.rglob("*")):
+        if not path.is_file() or path.suffix.lower() not in TEXT_SUFFIXES:
+            continue
+        raw = path.read_bytes()
+        lf = raw.replace(b"\r\n", b"\n")
+        if lf != raw:
+            path.write_bytes(lf)
+            changed += 1
+    return changed
 
 
 def _is_generated(path: Path) -> bool:

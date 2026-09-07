@@ -1,0 +1,98 @@
+{
+  "label": "infra-plumbing",
+  "model": "Infra-Plumbing.ifc",
+  "ifc_sha256": "f44c401de3bbc1b08d7717807b5add12a1c319f98b42a6c633a69fbcf61d83d1",
+  "sha256_unchanged_after_run": true,
+  "seconds": 6.7,
+  "elements": 26,
+  "pairs_possible": 325,
+  "pairs_admitted": 24,
+  "pad_m": 0.0,
+  "joints_excluded": 24,
+  "zones": 5,
+  "clashes": 0,
+  "resolved": 0,
+  "resolve_rate": null,
+  "boundary_owned": 0,
+  "connectivity": {
+    "edges": 0,
+    "ports_seen": 0,
+    "connections_seen": 0,
+    "nests_seen": 0,
+    "available": false
+  },
+  "system_aliases": {
+    "applied": 0,
+    "by_system": {},
+    "aliases": 3
+  },
+  "rules_loaded": 3,
+  "rules_never_applied": [
+    "MEP-GAS-LV-400",
+    "MEP-GAS-ANY-300",
+    "MEP-GAS-BLDG-5000"
+  ],
+  "checks_not_provable_from_this_model": {},
+  "zone_rows": [
+    {
+      "zone": "unassigned|-2_2+3",
+      "elements": 9,
+      "congestion": 0.2758,
+      "hard": 0,
+      "clearance": 0,
+      "proposals": 0,
+      "resolved": 0,
+      "resolve_rate": null,
+      "escalated": 0,
+      "status": "awaiting_review"
+    },
+    {
+      "zone": "unassigned|4_5+5",
+      "elements": 9,
+      "congestion": 0.2687,
+      "hard": 0,
+      "clearance": 0,
+      "proposals": 0,
+      "resolved": 0,
+      "resolve_rate": null,
+      "escalated": 0,
+      "status": "awaiting_review"
+    },
+    {
+      "zone": "unassigned|-4_1+1",
+      "elements": 5,
+      "congestion": 0.1532,
+      "hard": 0,
+      "clearance": 0,
+      "proposals": 0,
+      "resolved": 0,
+      "resolve_rate": null,
+      "escalated": 0,
+      "status": "awaiting_review"
+    },
+    {
+      "zone": "unassigned|1_4",
+      "elements": 2,
+      "congestion": 0.0542,
+      "hard": 0,
+      "clearance": 0,
+      "proposals": 0,
+      "resolved": 0,
+      "resolve_rate": null,
+      "escalated": 0,
+      "status": "awaiting_review"
+    },
+    {
+      "zone": "unassigned|-5_0",
+      "elements": 1,
+      "congestion": 0.0306,
+      "hard": 0,
+      "clearance": 0,
+      "proposals": 0,
+      "resolved": 0,
+      "resolve_rate": null,
+      "escalated": 0,
+      "status": "awaiting_review"
+    }
+  ]
+}

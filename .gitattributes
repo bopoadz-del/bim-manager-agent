@@ -1,0 +1,10 @@
+# Default: let git normalise text in the working tree.
+* text=auto
+
+# The vendored kit is a pinned artifact. Git must not transform it in either
+# direction: VENDOR.lock hashes exact bytes, and a checkout that rewrote line
+# endings would report every block as edited. See scripts/vendor_kit.py.
+vendor/** -text
+
+*.ifc binary
+*.bcfzip binary
