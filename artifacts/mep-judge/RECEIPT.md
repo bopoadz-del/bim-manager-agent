@@ -9,7 +9,7 @@
 | mypy | clean, 38 source files |
 | placeholders (`TODO\|FIXME\|NotImplementedError\|pass  # stub\|raise NotImplemented`) | **0** |
 | migration up → down → up | verified on SQLite locally; CI runs Postgres 16 |
-| vendored kit | `d7cff230453efd273388491e1cbf1d18f3ebefd5`, 15 files, `--check` clean |
+| vendored kit | `5c0711a066b6eef5e0861cbfa0d793972b719c83`, 15 files, `--check` clean |
 | OpenAPI | `openapi.json` committed, diffed in CI |
 | acceptance | A1–A7, A9 ✅ · A8 partially (see below) |
 | original IFC sha256 before vs after a full run | **identical** |

@@ -138,7 +138,7 @@ re-pinned, or it is not changed at all. `/health` reports the live pin.
 `app.blocks` mounts `vendor/mep_coordination/` by setting `__path__`, so the
 kit's own internal imports resolve untouched.
 
-**Currently pinned:** `d7cff230453efd273388491e1cbf1d18f3ebefd5` (15 files).
+**Currently pinned:** `5c0711a066b6eef5e0861cbfa0d793972b719c83` (15 files).
 
 ---
 

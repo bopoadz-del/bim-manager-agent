@@ -263,7 +263,7 @@ number, and the number was about something else.
 
 | step | result |
 |---|---|
-| vendored kit matches its pin | ✅ 15 files at `d7cff230453e` |
+| vendored kit matches its pin | ✅ 15 files at `5c0711a066b6` |
 | no placeholders | ✅ |
 | secret scan (fail closed) | ✅ |
 | ruff · mypy | ✅ |

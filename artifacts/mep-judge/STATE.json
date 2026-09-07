@@ -5,9 +5,10 @@
     "repo": "https://github.com/bopoadz-del/Cerebrum-Blocks",
     "path": "block_store/kits/mep_coordination/bundle/app/blocks",
     "ref": "main",
-    "sha": "d7cff230453efd273388491e1cbf1d18f3ebefd5",
+    "sha": "5c0711a066b6eef5e0861cbfa0d793972b719c83",
     "files": 15,
-    "reimplemented": false
+    "reimplemented": false,
+    "note": "Re-pinned after the upstream scrub: the seed rules cite PROJECT-UTILITIES-DRAWING-001, not a client drawing number."
   },
   "acceptance": {
     "A1_schependomlaan_pipeline": "PASS",

@@ -17,7 +17,7 @@ the same loader production uses.
 | ruff | clean |
 | mypy | clean, 38 files |
 | placeholders | **0** |
-| vendored kit | pinned at `d7cff230453efd273388491e1cbf1d18f3ebefd5`, 15 files, verified |
+| vendored kit | pinned at `5c0711a066b6eef5e0861cbfa0d793972b719c83`, 15 files, verified |
 
 ---
 
@@ -152,7 +152,7 @@ this bucket exists to preserve.
 |---|---|
 | `/health` returns 200 with the build sha | ✅ verified locally |
 | database, store backend and reason reported | ✅ `local`, "no Speckle token configured" |
-| vendored kit pin reported at `/health` | ✅ `d7cff230…`, 15 files |
+| vendored kit pin reported at `/health` | ✅ `5c0711a0…`, 15 files |
 | exact geometry backend reported | ✅ true |
 | image builds from a clean checkout | ✅ **verified in CI** |
 | container serves `/health` with `build_sha == GITHUB_SHA` | ✅ **verified in CI** |

@@ -12,12 +12,12 @@
     "ifc_loader.py": "cb4b9a10330be2979941d47b5c4cc07aaaf3297eb70dc7b0b94209c4807754df",
     "model_clone.py": "f129b729f07b45404e8fa30e7d03910847a9eecb593cb6b009485bc955bc5429",
     "order.yaml": "770ea8d615289e80da1f663384287506ff1d4f5457c38c87bf78f0e814b72c85",
-    "seed_rules.README.md": "547bbdace9868ab9c97ef219125de8fcd260ab3a341b669c952eb9c9697422fb",
-    "seed_rules.json": "32b483d7d76360ed9ed55a6d409cf4bca458674ae32f8ddc32b5334ead2b4e8c",
+    "seed_rules.README.md": "09bbb089eefb1c2a648369e955244b1ace6cf5a2570e25bfb68bb4c7bb952f43",
+    "seed_rules.json": "4ac1a4409b99ce96fe216e2da05e942b670189d572ae9fb922e5a12dc7dfcf15",
     "version_diff.py": "2afe9116366e7a095338dadf2ddd4c9ecb2f1ea061b9ad9c191c2709ff79fb58"
   },
   "path": "block_store/kits/mep_coordination/bundle/app/blocks",
   "ref": "main",
   "repo": "https://github.com/bopoadz-del/Cerebrum-Blocks",
-  "sha": "d7cff230453efd273388491e1cbf1d18f3ebefd5"
+  "sha": "5c0711a066b6eef5e0861cbfa0d793972b719c83"
 }
