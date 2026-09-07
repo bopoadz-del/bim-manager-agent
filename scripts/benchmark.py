@@ -21,11 +21,10 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 def run(ifc_path: Path, aliases: Path | None, label: str, out_dir: Path) -> dict:
-    from app.agents.coordinator import Coordinator, load_project_rules
     from app.blocks.ifc_loader import model_sha256
+
     from app.config import get_settings
     from app.db import get_engine, get_session_factory, reset_engine
-    from app.kit.systems import unreachable_rules
     from app.models import Base, Clash, ModelVersion, Project, Proposal, Zone
     from app.pipeline import run_pipeline
     from app.store.local import LocalModelStore
@@ -56,15 +55,6 @@ def run(ifc_path: Path, aliases: Path | None, label: str, out_dir: Path) -> dict
     ingest = run_pipeline(db, mv, store=store, top_n=1000, settings=settings)
     db.commit()
     elapsed = time.time() - started
-
-    coordinator = Coordinator(db, settings=settings, store=store)
-    from app.kit.engine import load_model
-
-    model = load_model(
-        mv.ifc_path, cache_dir=coordinator._cache_dir(),
-        aliases_path=mv.aliases_path,
-    )
-    rules = load_project_rules()
 
     zones = db.query(Zone).filter(Zone.model_version_id == mv.id).all()
     rows = []

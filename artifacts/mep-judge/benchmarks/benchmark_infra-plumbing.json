@@ -3,7 +3,7 @@
   "model": "Infra-Plumbing.ifc",
   "ifc_sha256": "f44c401de3bbc1b08d7717807b5add12a1c319f98b42a6c633a69fbcf61d83d1",
   "sha256_unchanged_after_run": true,
-  "seconds": 6.7,
+  "seconds": 2.0,
   "elements": 26,
   "pairs_possible": 325,
   "pairs_admitted": 24,
