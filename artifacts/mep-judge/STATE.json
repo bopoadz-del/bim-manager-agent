@@ -17,7 +17,7 @@
     "A5_rebase": "PASS",
     "A6_original_untouched": "PASS",
     "A7_version_diff": "PASS",
-    "A8_deploy": "PARTIAL",
+    "A8_deploy": "PASS_EXCEPT_RENDER_DEPLOY",
     "A9_coverage_and_mutation": "PASS"
   },
   "quality": {
@@ -31,19 +31,59 @@
     "mypy": "clean",
     "placeholders": 0
   },
-  "findings_closed": ["F1","F2","F3","F4","F5","F6","F7","F8","F9","F10","F11","F12","F13"],
+  "findings_closed": [
+    "F1",
+    "F2",
+    "F3",
+    "F4",
+    "F5",
+    "F6",
+    "F7",
+    "F8",
+    "F9",
+    "F10",
+    "F11",
+    "F12",
+    "F13",
+    "F14"
+  ],
   "blockers_open": [
-    {"id": "B1", "item": "Docker not installed on the build machine", "gate": "ci"},
-    {"id": "B2", "item": "Python 3.12 not installed on the build machine", "gate": "ci"},
-    {"id": "B3", "item": "no Speckle server", "gate": "owner"},
-    {"id": "B4", "item": "no Render service", "gate": "owner"},
-    {"id": "B5", "item": "product has no name", "gate": "owner"},
-    {"id": "B6", "item": "no real project rule or access table", "gate": "owner"}
+    {
+      "id": "B3",
+      "item": "no Speckle server",
+      "gate": "owner"
+    },
+    {
+      "id": "B4",
+      "item": "no Render service",
+      "gate": "owner"
+    },
+    {
+      "id": "B5",
+      "item": "product has no name",
+      "gate": "owner"
+    },
+    {
+      "id": "B6",
+      "item": "no real project rule or access table",
+      "gate": "owner"
+    }
   ],
   "known_limits": [
     "No clearance rule has fired on a real building model: both public fixtures lack the systems the seed rules name.",
     "Connectivity is unprovable on every real model tested; neither public model carries IfcDistributionPort.",
     "No project has supplied an access-zone table, so that check reports unprovable outside its own fixture.",
     "SpeckleModelStore has never run against a live server."
-  ]
+  ],
+  "ci": {
+    "status": "green",
+    "run": "https://github.com/bopoadz-del/mep-judge/actions/runs/34109449830",
+    "commit": "53f976882408e80d665732a4c25666eae9499dba",
+    "python": "3.12.14",
+    "tests_passed": 107,
+    "coverage_pct": 93.7,
+    "mutants_killed": 8,
+    "docker_build": "pass",
+    "container_health_matches_commit": true
+  }
 }

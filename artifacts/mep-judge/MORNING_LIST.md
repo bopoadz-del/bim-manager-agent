@@ -1,12 +1,12 @@
 # MORNING LIST — mep-judge
 
-Six blockers remain. Five are owner-gated by design; one is a local tooling gap
-that CI closes on the first push.
+**Four blockers remain, all owner-gated.** B1 and B2 are cleared: CI
+(https://github.com/bopoadz-del/mep-judge/actions/runs/34109449830) builds the image, runs the container, checks `/health` against the commit
+sha, and runs all 107 tests on Python 3.12 including A1 against the real 47 MB
+model.
 
 | # | Blocked on | Who clears it | What it unblocks |
 |---|---|---|---|
-| B1 | Docker not installed here | push (CI builds and health-checks the image) | the container half of A8 |
-| B2 | Python 3.12 not installed here | push (CI runs 3.12) | confirming the suite on the shipped runtime |
 | B3 | No Speckle server | owner: `MEPJ_SPECKLE_HOST` + `MEPJ_SPECKLE_TOKEN` | 3D diff in the review UI; the Speckle store path |
 | B4 | No Render service | owner: Render account, `render blueprint launch` | the deploy half of A8 |
 | B5 | The product has no name | owner | package, image and service names |

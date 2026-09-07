@@ -22,17 +22,25 @@
   monitors**. No mocks in the acceptance suite.
 - A1 ran against the real 47 MB `schependomlaan_design.ifc` in 129 s.
 
-## Not verified here
+## CI — green
+
+https://github.com/bopoadz-del/mep-judge/actions/runs/34109449830 · Python 3.12.14 · Postgres 16 · Redis 7
+
+107 passed in 67 s with A1 against the real 47 MB model; coverage 93.7% on agents
+and monitors; 8/8 mutants killed; migration up/down/up on Postgres; docker image
+built; container serves `/health` with `build_sha == GITHUB_SHA`.
+
+It took four runs to get there, and the three failures are worth reading: each
+one was a check that appeared to run and produced a number about something else.
+See RUNLOG **F14**.
+
+## Still not verified
 
 | | why | who clears it |
 |---|---|---|
-| `docker compose up` → `/health` | Docker is not installed on this machine | CI, on first push |
 | Render blueprint deploy | no Render account | owner |
 | Speckle store against a live server | no Speckle host or token | owner |
-
-The CI workflow builds the image, runs it, polls `/health` and asserts
-`build_sha == GITHUB_SHA`. It has not executed yet — the repository has had no
-CI run at the time of writing.
+| a real project rule or access table | none supplied | owner |
 
 ## The finding that matters
 

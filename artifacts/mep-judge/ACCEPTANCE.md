@@ -11,7 +11,7 @@ the same loader production uses.
 
 | | |
 |---|---|
-| tests | **107 passed**, 0 failed |
+| tests | **107 passed**, 0 failed (locally on 3.11; CI on **3.12.14**) |
 | mutation probes | **8 killed / 8**, 0 survivors (+1 control) |
 | coverage, `app/agents` + `app/monitors` | **93.8%** statement, **91%** branch |
 | ruff | clean |
@@ -146,7 +146,7 @@ in v1, not merely absent. A pair nobody looked at is `new`, and the difference
 between "we checked it and it was fine" and "we never checked" is the difference
 this bucket exists to preserve.
 
-## A8 — deployment ⚠️ partially verified locally
+## A8 — deployment ✅ (the Render deploy itself is still owner-gated)
 
 | | |
 |---|---|
@@ -154,12 +154,12 @@ this bucket exists to preserve.
 | database, store backend and reason reported | ✅ `local`, "no Speckle token configured" |
 | vendored kit pin reported at `/health` | ✅ `d7cff230…`, 15 files |
 | exact geometry backend reported | ✅ true |
-| `docker compose up` from a clean clone | ⛔ **not verified locally — Docker is not installed on the build machine** |
+| image builds from a clean checkout | ✅ **verified in CI** |
+| container serves `/health` with `build_sha == GITHUB_SHA` | ✅ **verified in CI** |
 | Render blueprint deploys | ⛔ **owner-gated — needs a Render account** |
 
-The container half runs in CI: `.github/workflows/ci.yml` builds the image, starts
-it, polls `/health`, and asserts `build_sha == GITHUB_SHA`. It has not run here
-because this machine has no Docker daemon. See RUNLOG **B1** and MORNING_LIST.
+Docker is not installed on the build machine, so the container half was verified
+where it could be: https://github.com/bopoadz-del/mep-judge/actions/runs/34109449830. Everything except the Render deploy is proven.
 
 ## A9 — coverage and mutation ✅
 

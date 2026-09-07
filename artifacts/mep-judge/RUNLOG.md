@@ -183,18 +183,18 @@ answers. 8/8 killed now.
 
 ## Blockers
 
-### B1 — Docker is not installed on this machine ⛔
-`docker compose up` and the container half of A8 could not be run here.
-`.github/workflows/ci.yml` builds the image, starts it, polls `/health` and
-asserts `build_sha == GITHUB_SHA`; that job has not executed yet because the
-repository has no CI run.
-**Unblocker:** push and let CI run, or install Docker Desktop.
+Two of the six are now cleared. Four remain, all owner-gated.
 
-### B2 — Python 3.12 is not installed on this machine ⛔
-Local Python is 3.11.9. The Dockerfile and CI pin 3.12 as specified; the source
-is kept 3.11-compatible so the suite actually runs locally. This means **the
-107 passing tests ran on 3.11, not 3.12.**
-**Unblocker:** CI on push.
+### B1 — Docker image and container health ✅ CLEARED
+Docker is still not installed on this machine, so this was cleared where it
+could be: CI builds the image, runs the container, polls `/health` and asserts
+`build_sha == GITHUB_SHA`. Both steps pass.
+Run: https://github.com/bopoadz-del/mep-judge/actions/runs/34109449830
+
+### B2 — Python 3.12 ✅ CLEARED
+Local Python is 3.11.9, so the suite runs on 3.11 here. CI runs the same 107
+tests on **Python 3.12.14**, including A1 against the real 47 MB model, in 67 s.
+Run: https://github.com/bopoadz-del/mep-judge/actions/runs/34109449830
 
 ### B3 — no Speckle server ⛔ (owner-gated)
 Every number in ACCEPTANCE was produced with the local model store, which is a
@@ -217,3 +217,61 @@ access-zone table, so that check reports `unprovable` outside its own fixture �
 which is labelled in-file as carrying no authority.
 **Unblocker:** a project specification to run `app/llm/rule_extraction.py`
 against, and an engineer to approve the candidates.
+
+
+---
+
+## F14 — three CI faults, each of which made a check look like it had run
+**Found:** the first three CI runs, after the code was already green locally.
+
+1. **Every vendored block reported as edited in place.** Nothing was edited.
+   `git archive` honours the local `core.autocrlf`, so `--sync` on Windows
+   extracted and hashed CRLF while git stored and Linux checked out LF. The same
+   commit produced two different locks depending on who ran the sync — and the
+   failure looked exactly like tampering, which is the worst possible false
+   positive for a check whose whole job is detecting tampering.
+   **Fixed:** the pin normalises text to LF before hashing; `.gitattributes`
+   marks `vendor/** -text` so git never transforms it in either direction.
+
+2. **A1 silently skipped and the run still went green.** `fetch_fixtures.sh`
+   failed with *Permission denied* — the executable bit does not survive a
+   commit made on Windows — so the model was absent and pytest reported
+   "106 passed, 1 skipped" in ten seconds. A skipped acceptance test is not a
+   passed one.
+   **Fixed:** CI invokes the script through `bash`, and a following step fails
+   the build if the model is not on disk afterwards. The Infra-Plumbing URL was
+   also 404ing against a stale path; corrected to the repo's `main` branch and
+   its `<schema>/Simple-Scene/` layout.
+
+3. **The coverage gate measured the whole application.** `check_coverage.py`
+   joined every filename against every `<source>` root without checking the file
+   existed there, so with three `--cov` roots `config.py` resolved as
+   `app/agents/config.py`. It reported 83.1% across 37 files while claiming to
+   measure the 10 in agents and monitors — and failed the build for the wrong
+   reason.
+   **Fixed:** a candidate only counts if the resolved path exists. Correctly
+   scoped: **93.7%** in CI.
+
+All three share a shape worth naming: the check appeared to run, produced a
+number, and the number was about something else.
+
+---
+
+## CI — green
+
+`https://github.com/bopoadz-del/mep-judge/actions/runs/34109449830` on `53f976882408` — Python 3.12.14, Postgres 16, Redis 7.
+
+| step | result |
+|---|---|
+| vendored kit matches its pin | ✅ 15 files at `d7cff230453e` |
+| no placeholders | ✅ |
+| secret scan (fail closed) | ✅ |
+| ruff · mypy | ✅ |
+| migration up → down → up | ✅ on Postgres 16 |
+| acceptance fixture present | ✅ 47 MB model downloaded |
+| tests | ✅ **107 passed** in 67 s, A1 included |
+| coverage floor, agents + monitors | ✅ **93.7%** (floor 85%) |
+| mutation probes | ✅ **8/8 killed**, 0 survivors |
+| OpenAPI schema diff | ✅ unchanged |
+| docker build | ✅ |
+| container `/health` == `GITHUB_SHA` | ✅ |
