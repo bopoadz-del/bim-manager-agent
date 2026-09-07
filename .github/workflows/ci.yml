@@ -93,7 +93,20 @@ jobs:
           alembic upgrade head
 
       - name: Fetch acceptance fixtures
-        run: ./scripts/fetch_fixtures.sh || echo "large fixtures unavailable; A1 will skip"
+        # Invoked through bash rather than executed directly: the executable bit
+        # does not survive a commit made on Windows, and a fixture that silently
+        # fails to download turns A1 into a skip that still reports green.
+        run: bash scripts/fetch_fixtures.sh || echo "large fixtures unavailable; A1 will skip"
+
+      - name: The acceptance fixture is actually present
+        run: |
+          # A1 is the only test that touches a real building. If the download
+          # failed, say so loudly here rather than letting a skip pass for a pass.
+          if [ ! -f tests/fixtures/models/schependomlaan_design.ifc ]; then
+            echo "::error::schependomlaan_design.ifc missing -- A1 would skip, and a skipped acceptance test is not a passed one"
+            exit 1
+          fi
+          ls -lh tests/fixtures/models/
 
       - name: Tests with coverage
         run: |

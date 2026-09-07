@@ -30,17 +30,27 @@ def main() -> int:
 
     # Coverage records each file relative to a <source> root, not to the
     # repository, so "app/agents/coordinator.py" appears as
-    # "agents/coordinator.py". Rejoining them is the difference between checking
-    # the floor and silently checking nothing.
+    # "agents/coordinator.py". With several --cov roots there are several
+    # sources and the report does not say which one a given file belongs to.
+    #
+    # So a candidate only counts if the joined path actually exists. Without
+    # that check "config.py" resolves against every root at once and lands as
+    # "app/agents/config.py", matching a package it is not in -- which is how
+    # this checker once reported the whole application as the agents package.
     sources = [Path(s.text or ".") for s in root.iter("source")]
     repo = Path.cwd().resolve()
 
     def repo_relative(filename: str) -> list[str]:
         raw = filename.replace("\\", "/")
-        out = [raw]
+        out = []
+        if (repo / raw).exists():
+            out.append(raw)
         for source in sources:
+            candidate = (source / raw)
+            if not candidate.exists():
+                continue
             try:
-                out.append((source / raw).resolve().relative_to(repo).as_posix())
+                out.append(candidate.resolve().relative_to(repo).as_posix())
             except (ValueError, OSError):
                 continue
         return out
