@@ -1,0 +1,31 @@
+# Large public fixtures. Provenance lives in tests/fixtures/models/README.md,
+# the bytes live in a download: scripts/fetch_fixtures.sh
+tests/fixtures/models/*.ifc
+
+# Generated trap fixtures: rebuilt by tests/fixtures/build_fixtures.py
+tests/fixtures/generated/
+
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+var/
+*.db
+*.sqlite3
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+openapi.generated.json
+
+# Run output: mesh caches, review packages, streams. Evidence is committed;
+# the working artefacts around it are not.
+artifacts/mep-judge/mesh_cache/
+artifacts/mep-judge/findings/
+artifacts/mep-judge/review/
+artifacts/mep-judge/streams/
+
+.env
+.DS_Store

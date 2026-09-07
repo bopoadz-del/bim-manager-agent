@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>mep-judge — zone review</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --panel: #ffffff; --ink: #16181d; --muted: #666b76;
+    --line: #e2e4e9; --pass: #1a7f4b; --fail: #b3261e; --warn: #8a6d00;
+    --accent: #21447a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14161a; --panel: #1c1f25; --ink: #e9eaed; --muted: #9aa0ac;
+      --line: #2b2f37; --pass: #4ec98a; --fail: #ff8a80; --warn: #e0bb4a;
+      --accent: #8fb3ee;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { padding: 12px 20px; border-bottom: 1px solid var(--line);
+           display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  h1 { font-size: 15px; margin: 0; font-weight: 650; letter-spacing: -0.01em; }
+  .muted { color: var(--muted); }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12px; }
+  main { display: grid; grid-template-columns: 300px 1fr; gap: 0; height: calc(100vh - 54px); }
+  @media (max-width: 860px) { main { grid-template-columns: 1fr; height: auto; } }
+  nav { border-right: 1px solid var(--line); overflow-y: auto; padding: 8px; }
+  section { overflow-y: auto; padding: 20px; }
+  input, select, button, textarea {
+    font: inherit; color: inherit; background: var(--panel);
+    border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px;
+  }
+  button { cursor: pointer; }
+  button.primary { background: var(--accent); color: #fff; border-color: transparent; }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  .zone { display: block; width: 100%; text-align: left; margin-bottom: 4px;
+          border: 1px solid transparent; background: none; border-radius: 6px; padding: 8px 10px; }
+  .zone:hover { background: var(--panel); }
+  .zone[aria-current="true"] { background: var(--panel); border-color: var(--line); }
+  .card { background: var(--panel); border: 1px solid var(--line);
+          border-radius: 8px; padding: 14px; margin-bottom: 12px; }
+  .row { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  .pass { color: var(--pass); } .fail { color: var(--fail); } .warn { color: var(--warn); }
+  .pill { display: inline-block; border: 1px solid var(--line); border-radius: 999px;
+          padding: 1px 9px; font-size: 12px; }
+  table { border-collapse: collapse; width: 100%; }
+  td, th { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line);
+           vertical-align: top; }
+  th { font-weight: 600; color: var(--muted); font-size: 12px; }
+  iframe { width: 100%; height: 340px; border: 1px solid var(--line); border-radius: 8px;
+           background: var(--panel); }
+  details summary { cursor: pointer; color: var(--muted); }
+  .hash { word-break: break-all; }
+  .scroll { overflow-x: auto; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script>
+const { useState, useEffect, useCallback, createElement: h } = React;
+
+// ---------------------------------------------------------------- api
+const KEY = "mepj_key";
+function apiKey() { try { return sessionStorage.getItem(KEY) || ""; } catch { return ""; } }
+function setApiKey(v) { try { sessionStorage.setItem(KEY, v); } catch {} }
+
+async function api(path, options) {
+  const res = await fetch(path, {
+    ...options,
+    headers: { "X-API-Key": apiKey(), "Content-Type": "application/json",
+               ...(options && options.headers) },
+  });
+  const text = await res.text();
+  let body = null;
+  try { body = text ? JSON.parse(text) : null; } catch { body = { message: text }; }
+  if (!res.ok) {
+    // The service never returns 200 on failure, so a non-ok response always
+    // carries a typed code. Surface it rather than a generic "request failed".
+    throw new Error((body && (body.message || body.code)) || res.statusText);
+  }
+  return body;
+}
+
+// ---------------------------------------------------------------- bits
+function Verdict({ result, name }) {
+  if (!result) return h("span", { className: "muted" }, `${name}: not run`);
+  const cls = result.passed ? "pass" : "fail";
+  const unprovable = (result.unprovable || []);
+  return h("div", { style: { marginBottom: 6 } },
+    h("span", { className: cls }, `${result.passed ? "PASS" : "FAIL"} `),
+    h("strong", null, name), " ",
+    h("span", { className: "muted" }, result.reason),
+    unprovable.length
+      ? h("div", { className: "warn mono" },
+          `could not be checked from this model: ${unprovable.join(", ")}`)
+      : null,
+  );
+}
+
+function MoveVector({ v }) {
+  if (!v || !v.length) return h("span", { className: "muted" }, "no move");
+  const parts = ["X", "Y", "Z"]
+    .map((ax, i) => (Math.abs(v[i]) > 0.001 ? `${ax} ${v[i] > 0 ? "+" : ""}${v[i].toFixed(0)} mm` : null))
+    .filter(Boolean);
+  return h("span", { className: "mono" }, parts.length ? parts.join(", ") : "0 mm");
+}
+
+function Viewer({ zone, stream }) {
+  // Speckle serves an embed view per stream/branch. Without a configured
+  // Speckle server there is nothing to embed, and saying so beats an empty box.
+  if (!stream || !zone.branch) {
+    return h("div", { className: "card muted" },
+      "No Speckle stream is configured for this run, so there is no 3D diff to show. ",
+      "The change set and BCF below are complete and unaffected.");
+  }
+  const host = (window.MEPJ_SPECKLE_HOST || "https://app.speckle.systems").replace(/\/$/, "");
+  const src = `${host}/embed?stream=${encodeURIComponent(stream)}&branch=${encodeURIComponent(zone.branch)}`;
+  return h("iframe", { src, title: `3D diff for ${zone.zone_key}`, loading: "lazy" });
+}
+
+// ---------------------------------------------------------------- app
+function App() {
+  const [key, setKey] = useState(apiKey());
+  const [versionId, setVersionId] = useState("");
+  const [version, setVersion] = useState(null);
+  const [zones, setZones] = useState([]);
+  const [zone, setZone] = useState(null);
+  const [clashes, setClashes] = useState([]);
+  const [proposals, setProposals] = useState([]);
+  const [health, setHealth] = useState(null);
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [reviewer, setReviewer] = useState("");
+
+  useEffect(() => { api("/health").then(setHealth).catch(() => {}); }, []);
+
+  const loadZones = useCallback(async (id) => {
+    setError("");
+    try {
+      setVersion(await api(`/models/${id}`));
+      setZones(await api(`/models/${id}/zones`));
+    } catch (e) { setError(e.message); }
+  }, []);
+
+  const openZone = useCallback(async (z) => {
+    setZone(z); setError("");
+    try {
+      setClashes(await api(`/zones/${z.id}/clashes`));
+      setProposals(await api(`/zones/${z.id}/proposals`));
+    } catch (e) { setError(e.message); }
+  }, []);
+
+  async function decide(decision) {
+    if (!zone) return;
+    if (!reviewer.trim()) { setError("Enter your name before recording a decision."); return; }
+    setBusy(true); setError("");
+    try {
+      await api(`/zones/${zone.id}/review`, {
+        method: "POST",
+        body: JSON.stringify({ decision, reviewer: reviewer.trim(), edits: [] }),
+      });
+      await loadZones(versionId);
+      await openZone(zone);
+    } catch (e) { setError(e.message); } finally { setBusy(false); }
+  }
+
+  const latestFor = (clashId) =>
+    proposals.filter((p) => p.clash_id === clashId).slice(-1)[0] || null;
+
+  return h(React.Fragment, null,
+    h("header", null,
+      h("h1", null, "mep-judge"),
+      health && h("span", { className: "muted mono" },
+        `build ${health.build_sha} · ${health.database} · store ${health.store.backend}` +
+        (health.exact_geometry_backend ? " · exact geometry" : " · SURFACE GEOMETRY ONLY")),
+      h("span", { style: { flex: 1 } }),
+      h("input", {
+        type: "password", placeholder: "API key", value: key, style: { width: 190 },
+        onChange: (e) => { setKey(e.target.value); setApiKey(e.target.value); },
+      }),
+      h("input", {
+        placeholder: "model version id", value: versionId, style: { width: 250 },
+        onChange: (e) => setVersionId(e.target.value),
+      }),
+      h("button", { onClick: () => loadZones(versionId), disabled: !versionId }, "Load"),
+    ),
+
+    error && h("div", { className: "card fail", style: { margin: 16 } }, error),
+
+    h("main", null,
+      h("nav", null,
+        zones.length === 0
+          ? h("p", { className: "muted", style: { padding: 10 } },
+              "Enter an API key and a model version id, then Load.")
+          : zones.map((z) =>
+              h("button", {
+                key: z.id, className: "zone", "aria-current": zone && zone.id === z.id,
+                onClick: () => openZone(z),
+              },
+                h("div", null, h("strong", null, z.zone_key)),
+                h("div", { className: "muted mono" },
+                  `${z.status} · ${z.element_count} elements · congestion ${z.congestion.toFixed(3)}`),
+                z.dedicated_reason && h("span", { className: "pill" }, z.dedicated_reason),
+              )),
+      ),
+
+      h("section", null,
+        !zone
+          ? h("p", { className: "muted" }, "Select a zone.")
+          : h(React.Fragment, null,
+              h("div", { className: "card" },
+                h("div", { className: "row" },
+                  h("h2", { style: { margin: 0, fontSize: 16 } }, zone.zone_key),
+                  h("span", { className: "pill" }, zone.status),
+                  h("span", { className: "muted" },
+                    `buffer ${zone.buffer_m} m · priority ${zone.priority.toFixed(3)}`),
+                ),
+                version && h("p", { className: "muted mono hash", style: { marginBottom: 0 } },
+                  "original IFC sha256 (unchanged by this run): ", version.ifc_sha256),
+              ),
+
+              h(Viewer, { zone, stream: version && version.speckle_stream }),
+
+              h("div", { className: "card" },
+                h("div", { className: "row" },
+                  h("input", {
+                    placeholder: "your name", value: reviewer,
+                    onChange: (e) => setReviewer(e.target.value),
+                  }),
+                  h("button", { className: "primary", disabled: busy,
+                                onClick: () => decide("approve") }, "Approve zone"),
+                  h("button", { disabled: busy, onClick: () => decide("reject") }, "Reject"),
+                  h("a", { href: `/zones/${zone.id}/change_set.json` }, "change_set.json"),
+                  h("a", { href: `/zones/${zone.id}/bcf.zip` }, "bcf.zip"),
+                ),
+                h("p", { className: "muted", style: { marginBottom: 0 } },
+                  "Approving exports the change set for your authoring tool. ",
+                  "The original model is never written to."),
+              ),
+
+              h("div", { className: "scroll" },
+                h("table", null,
+                  h("thead", null, h("tr", null,
+                    ["Clash", "Kind", "Systems", "State", "Clause", "Proposed move"]
+                      .map((t) => h("th", { key: t }, t)))),
+                  h("tbody", null, clashes.map((c) => {
+                    const p = latestFor(c.id);
+                    return h("tr", { key: c.id },
+                      h("td", { className: "mono" }, c.clash_key.slice(0, 18), "…"),
+                      h("td", null, c.kind,
+                        c.depth_or_gap_mm != null
+                          ? h("div", { className: "muted mono" }, `${c.depth_or_gap_mm.toFixed(0)} mm`)
+                          : null),
+                      h("td", null, (c.systems || []).join(" / ")),
+                      h("td", null, h("span", { className: "pill" }, c.state),
+                        c.owner === "coordinator"
+                          ? h("div", { className: "muted" }, "boundary — coordinator owns") : null),
+                      h("td", null, p && p.clause_text
+                        ? p.clause_text
+                        : h("span", { className: "muted" },
+                            c.kind === "clearance" ? "unsourced — not proposed" : "no rule cited")),
+                      h("td", null,
+                        p ? h(React.Fragment, null,
+                              h(MoveVector, { v: p.move_vector }),
+                              h("details", null,
+                                h("summary", null, `monitors (${p.verdict})`),
+                                h(Verdict, { name: "geometry", result: p.monitor_geometry }),
+                                h(Verdict, { name: "boundary", result: p.monitor_boundary }),
+                                h(Verdict, { name: "integrity", result: p.monitor_integrity }),
+                              ))
+                          : h("span", { className: "muted" }, "none")),
+                    );
+                  })),
+                ),
+              ),
+            ),
+      ),
+    ),
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(h(App));
+</script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://cerebrum-blocks/mep_coordination/clearance_rule.schema.json",
+  "title": "ClearanceRule",
+  "description": "One sourced minimum-gap requirement between two MEP system categories. A rule that cannot cite the clause it came from is not a rule -- see source.clause / source.text_hash below, which load_rules() in clearance_rules.py refuses to skip.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["rule_id", "system_a", "system_b", "min_gap_mm", "axis", "source", "precedence"],
+  "properties": {
+    "rule_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable identifier for this rule. Carried onto every violation it produces so a reader can trace the finding back to this record."
+    },
+    "system_a": {
+      "type": "string",
+      "minLength": 1,
+      "description": "One side of the pair this rule governs, e.g. 'electrical'. '*' matches any system."
+    },
+    "system_b": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The other side of the pair. '*' matches any system. Matching is unordered: a rule for (a, b) also matches a finding reported as (b, a)."
+    },
+    "min_gap_mm": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Minimum required separation, in millimetres, measured centre-to-centre-free surface (matches Finding.distance_m * 1000 from geometry_engine)."
+    },
+    "axis": {
+      "type": "string",
+      "enum": ["any", "vertical", "horizontal"],
+      "description": "Which direction of separation this rule governs. 'any' applies regardless of orientation; 'vertical' and 'horizontal' apply only to separation measured along that axis."
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["doc", "clause", "text_hash"],
+      "description": "The citation this rule was ingested from. All three fields are mandatory: a rule with no clause or no text_hash is refused at load, not silently dropped.",
+      "properties": {
+        "doc": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Document the clause was read from, e.g. 'SBC-501' or a project specification section number."
+        },
+        "clause": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The specific clause/section within doc that states this requirement."
+        },
+        "text_hash": {
+          "type": "string",
+          "minLength": 1,
+          "description": "A hash of the exact clause text at ingestion time, so a later diff of the source document can detect that this rule's citation has gone stale."
+        }
+      }
+    },
+    "precedence": {
+      "type": "string",
+      "enum": ["code", "project_spec"],
+      "description": "Where the rule comes from. 'code' is a statutory/code minimum. 'project_spec' is a project-specific requirement, which may only TIGHTEN a code minimum for the same pair, never loosen it -- see resolve_precedence() in clearance_rules.py."
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "v1": "9d0b4b663d28e65a4b29f86138cd97f6efdac672ed86c189c5cd63417edb5ad5",
+  "v2": "6dd9b7524a914d2b8e9e56dae70582f0a8ab7e0274a0018b797f64c9cac86ea5",
+  "resolved": 1,
+  "regressed": 1,
+  "new": 0,
+  "persisting": 0,
+  "proposal_score": {
+    "proposed": 1,
+    "resolved": 1,
+    "rate": 1.0
+  }
+}

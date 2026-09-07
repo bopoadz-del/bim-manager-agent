@@ -1,0 +1,32 @@
+{
+  "zone_a": "Level 00|1_0",
+  "zone_b": "Level 00|0_0",
+  "clash": "0RaRsgPsfT2fp3DUUF6PpS::34H8GuPcXT1Bru9J60hmey",
+  "state_path": [
+    "open",
+    "verified",
+    "proposed"
+  ],
+  "rebased_zones": [
+    "Level 00|0_0"
+  ],
+  "objections": [
+    "boundary: no_neighbour_finding_worsened: move tightens 1 finding(s) across the boundary"
+  ],
+  "trigger": {
+    "zones": [
+      "Level 00|1_0"
+    ],
+    "element": "2FvKDXWiTJjxjfFh3AQNB3"
+  },
+  "verified_move_mm": [
+    -375.0,
+    0.0,
+    0.0
+  ],
+  "neighbour_commit_mm": [
+    -1875.0,
+    0.0,
+    0.0
+  ]
+}

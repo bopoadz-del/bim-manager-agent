@@ -1,0 +1,23 @@
+{
+  "files": {
+    "__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bcf_export.py": "004bb23c7734db67deaa8bf30ca74c7619b1640f8c5bfe6858dafe13f54487e9",
+    "clash_resolver.py": "76309bdddd7d77ca985c63610582985cd9ea4ab888cc6f50077d0e288bad7193",
+    "clash_triage.py": "4a4abcb5dac385059494ff0879eddbc99fe692393fce113469bcb93b4634fae8",
+    "clearance_rule.schema.json": "7dcac416df415944b52caeb09e8f9a2d059be942f83f514107d4d3106d33d6bd",
+    "clearance_rules.py": "e959fe57afe0ea747ccb29a4ac5f14fb7aa6c839e5301bc9b7c214833f645e67",
+    "connectivity.py": "3c9f1f5792b95bdaaf800965939a961ad098a5789e8b004ad1cd6a578fb9d051",
+    "geometry_engine.py": "0fd54e098c08484ab8f0d536ac21e0768878f868dda986436753981e12043839",
+    "identity.py": "00df25ed6a86c4c2406c08003810600356c6c69db0b2196b3e6237e8315c61a7",
+    "ifc_loader.py": "eddb1656d8adc567a8dc128bcc97092c20d4003c8341d5ae16c71567b384caf9",
+    "model_clone.py": "3b485418917d3cb442f82294a0c8e395b5782f6dc5c42aba64054693ead2eb3d",
+    "order.yaml": "e28b9f36e949237ddc861f7c159b774ada7f1b24f7756b72d4b670ccfb7164b7",
+    "seed_rules.README.md": "74fd8b21b5292fca7cca6fde209535b210968522e70fef4bc0a3b9cbd07b229e",
+    "seed_rules.json": "bb3dd3568d7d5230c1f67b5a4965d9f83fe69ac6bbec43f6c4a7d6dcbf696222",
+    "version_diff.py": "d0c23707259cf0d6218f4208f818a31d460c92f1163c2a7a1b97719333ea6f4f"
+  },
+  "path": "block_store/kits/mep_coordination/bundle/app/blocks",
+  "ref": "main",
+  "repo": "https://github.com/bopoadz-del/Cerebrum-Blocks",
+  "sha": "d7cff230453efd273388491e1cbf1d18f3ebefd5"
+}

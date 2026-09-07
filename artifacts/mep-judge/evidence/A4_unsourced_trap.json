@@ -1,0 +1,21 @@
+{
+  "with_rule": {
+    "rule_id": "MEP-GAS-LV-400",
+    "kind": "clearance",
+    "distance_m": 0.04999999999999982,
+    "required_m": 0.4
+  },
+  "rules_stripped": [
+    "MEP-GAS-ANY-300",
+    "MEP-GAS-LV-400"
+  ],
+  "without_rule": {
+    "clearance_findings": 0,
+    "resolver_verdict": "flagged_unsourced",
+    "reason": [
+      {
+        "reason": "clearance finding carries no sourced rule; no authorised distance exists"
+      }
+    ]
+  }
+}

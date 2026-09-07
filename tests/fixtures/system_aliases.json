@@ -1,0 +1,20 @@
+{
+  "note": "Naming only. Maps element-name patterns onto the vocabulary the cited rule table uses. No entry here introduces, relaxes or invents a clearance distance; those come from a cited rule or they do not exist.",
+  "aliases": [
+    {
+      "pattern": "\\bgas\\b|gasleiding",
+      "system": "gas_main",
+      "note": "The kit loader has no gas hint at all, so a gas main infers as 'unknown' and every gas rule stays unreachable."
+    },
+    {
+      "pattern": "cable tray|kabelgoot|\\bLV\\b|laagspanning",
+      "system": "electrical_lv",
+      "note": "Loader gives the generic 'electrical'; the cited rule table distinguishes LV."
+    },
+    {
+      "pattern": "\\bwall\\b|\\bmuur\\b|building envelope",
+      "system": "building",
+      "note": "Building fabric, for the building-to-gas separation."
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "element": "vuilwater afvoer FD-01",
+  "system": "drainage_foul",
+  "candidates_offered": 32,
+  "candidates_with_vertical_component": 0,
+  "vertical_move_verdict": "fail",
+  "vertical_move_reason": "move changes the invert of a gravity element by 250 mm; a drain that runs uphill does not drain",
+  "lateral_move_verdict": "pass"
+}

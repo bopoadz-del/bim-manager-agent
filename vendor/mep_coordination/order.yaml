@@ -1,0 +1,65 @@
+# Resolution order — data, not code, so it can be argued with by an engineer
+# who has never opened the source.
+#
+# The order is not preference. It is what physics and cost allow, and it is
+# the sequence a coordination meeting actually follows.
+
+resolution_order:
+  - rank: 1
+    system_class: gravity
+    systems: [drainage_storm, drainage_foul]
+    rationale: >
+      Gravity drainage is resolved FIRST because it is the least free to move.
+      It must hold a continuous fall to its outfall; raising one segment to
+      dodge a duct can flatten or reverse the slope for the whole run
+      downstream, which is a hydraulic failure, not a coordination
+      inconvenience. Everything else can be routed around a fixed drain.
+      Move a drain last and you have already committed the space it needed.
+
+  - rank: 2
+    system_class: ducted
+    systems: [ventilation]
+    rationale: >
+      Ductwork is next because it is the bulkiest service and its cross
+      section is set by airflow. It can be re-routed, but it cannot be
+      shrunk without changing the duty. Fixing its corridor early stops
+      smaller services claiming the only volume large enough to hold it.
+
+  - rank: 3
+    system_class: containment
+    systems: [electrical, cable_tray, containment]
+    rationale: >
+      Trays and containment bend readily and tolerate offsets, so they yield
+      to gravity and ducts. They are still placed before pressurised pipe
+      because tray routes are long and continuous, and threading them last
+      through a committed ceiling is what produces site-invented routes.
+
+  - rank: 4
+    system_class: pressurised
+    systems: [fire, chilled_water, heating, potable_water, gas_main]
+    rationale: >
+      Pressurised services are LAST because they are the most tolerant: they
+      flow uphill and downhill alike, so a bend or an offset costs a fitting
+      and some pressure drop rather than a redesign. Being last is not being
+      unimportant -- it is being the service best able to absorb the
+      compromise.
+
+# Everything below is classification, not sequence.
+
+workflow_noise:
+  rule: same_system_and_fitting_to_segment
+  rationale: >
+    A fitting overlapping the segment it joins is not a clash; it is how a
+    pipe run is assembled. Reporting those buries the real findings in
+    thousands of rows and trains the engineer to stop reading. Dropped, but
+    COUNTED, so the report can say how many were dropped and why.
+
+congestion:
+  cell_m: 6.0
+  metric: services_volume_over_zone_volume
+  rationale: >
+    Congestion ranks zones, not clashes. A zone at 40% services-to-void is
+    where the next clash appears after this one is fixed, so it is worth an
+    engineer's attention even where today's clash count is low. Cell size is
+    6 m because that is the common structural bay, so a cell tends to match a
+    real coordination zone rather than an arbitrary box.

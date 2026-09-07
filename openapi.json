@@ -1,0 +1,1562 @@
+{
+  "components": {
+    "schemas": {
+      "Body_create_key_projects__project_id__keys_post": {
+        "properties": {
+          "label": {
+            "default": "",
+            "title": "Label",
+            "type": "string"
+          },
+          "role": {
+            "default": "reviewer",
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "title": "Body_create_key_projects__project_id__keys_post",
+        "type": "object"
+      },
+      "Body_upload_model_projects__project_id__models_post": {
+        "properties": {
+          "ifc": {
+            "contentMediaType": "application/octet-stream",
+            "title": "Ifc",
+            "type": "string"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          },
+          "programme": {
+            "anyOf": [
+              {
+                "contentMediaType": "application/octet-stream",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Programme"
+          }
+        },
+        "required": [
+          "ifc"
+        ],
+        "title": "Body_upload_model_projects__project_id__models_post",
+        "type": "object"
+      },
+      "ClashOut": {
+        "properties": {
+          "a_gid": {
+            "title": "A Gid",
+            "type": "string"
+          },
+          "attempts": {
+            "title": "Attempts",
+            "type": "integer"
+          },
+          "b_gid": {
+            "title": "B Gid",
+            "type": "string"
+          },
+          "clash_key": {
+            "title": "Clash Key",
+            "type": "string"
+          },
+          "depth_or_gap_mm": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Depth Or Gap Mm"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "owner": {
+            "title": "Owner",
+            "type": "string"
+          },
+          "required_gap_mm": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Required Gap Mm"
+          },
+          "rule_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rule Id"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          },
+          "systems": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Systems",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "clash_key",
+          "a_gid",
+          "b_gid",
+          "kind",
+          "depth_or_gap_mm",
+          "systems",
+          "state",
+          "attempts",
+          "owner",
+          "rule_id",
+          "required_gap_mm",
+          "note"
+        ],
+        "title": "ClashOut",
+        "type": "object"
+      },
+      "DiffOut": {
+        "properties": {
+          "model_version_id": {
+            "title": "Model Version Id",
+            "type": "string"
+          },
+          "new": {
+            "title": "New",
+            "type": "integer"
+          },
+          "persisting": {
+            "title": "Persisting",
+            "type": "integer"
+          },
+          "previous_id": {
+            "title": "Previous Id",
+            "type": "string"
+          },
+          "proposal_score": {
+            "additionalProperties": true,
+            "title": "Proposal Score",
+            "type": "object"
+          },
+          "regressed": {
+            "title": "Regressed",
+            "type": "integer"
+          },
+          "resolved": {
+            "title": "Resolved",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "model_version_id",
+          "previous_id",
+          "resolved",
+          "regressed",
+          "new",
+          "persisting",
+          "proposal_score"
+        ],
+        "title": "DiffOut",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "HealthOut": {
+        "properties": {
+          "build_sha": {
+            "title": "Build Sha",
+            "type": "string"
+          },
+          "database": {
+            "title": "Database",
+            "type": "string"
+          },
+          "exact_geometry_backend": {
+            "title": "Exact Geometry Backend",
+            "type": "boolean"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "store": {
+            "additionalProperties": true,
+            "title": "Store",
+            "type": "object"
+          },
+          "vendored_kit": {
+            "additionalProperties": true,
+            "title": "Vendored Kit",
+            "type": "object"
+          }
+        },
+        "required": [
+          "status",
+          "build_sha",
+          "database",
+          "store",
+          "exact_geometry_backend",
+          "vendored_kit"
+        ],
+        "title": "HealthOut",
+        "type": "object"
+      },
+      "IngestOut": {
+        "properties": {
+          "boundary_owned": {
+            "title": "Boundary Owned",
+            "type": "integer"
+          },
+          "clashes_created": {
+            "title": "Clashes Created",
+            "type": "integer"
+          },
+          "joints_excluded": {
+            "title": "Joints Excluded",
+            "type": "integer"
+          },
+          "model_version": {
+            "$ref": "#/components/schemas/ModelVersionOut"
+          },
+          "pairs_admitted": {
+            "title": "Pairs Admitted",
+            "type": "integer"
+          },
+          "zones_created": {
+            "title": "Zones Created",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "model_version",
+          "zones_created",
+          "clashes_created",
+          "joints_excluded",
+          "pairs_admitted",
+          "boundary_owned"
+        ],
+        "title": "IngestOut",
+        "type": "object"
+      },
+      "KeyIssued": {
+        "description": "The plaintext appears here and nowhere else, ever again.",
+        "properties": {
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "note": {
+            "default": "Store this now. It is not recoverable.",
+            "title": "Note",
+            "type": "string"
+          },
+          "role": {
+            "title": "Role",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "role",
+          "label"
+        ],
+        "title": "KeyIssued",
+        "type": "object"
+      },
+      "ModelVersionOut": {
+        "properties": {
+          "element_count": {
+            "title": "Element Count",
+            "type": "integer"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "ifc_sha256": {
+            "title": "Ifc Sha256",
+            "type": "string"
+          },
+          "ingested_at": {
+            "format": "date-time",
+            "title": "Ingested At",
+            "type": "string"
+          },
+          "project_id": {
+            "title": "Project Id",
+            "type": "string"
+          },
+          "speckle_stream": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Speckle Stream"
+          },
+          "stats": {
+            "additionalProperties": true,
+            "title": "Stats",
+            "type": "object"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "project_id",
+          "ifc_sha256",
+          "element_count",
+          "status",
+          "ingested_at"
+        ],
+        "title": "ModelVersionOut",
+        "type": "object"
+      },
+      "ProjectIn": {
+        "properties": {
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "ProjectIn",
+        "type": "object"
+      },
+      "ProjectOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "created_at"
+        ],
+        "title": "ProjectOut",
+        "type": "object"
+      },
+      "ProposalOut": {
+        "properties": {
+          "attempt": {
+            "title": "Attempt",
+            "type": "integer"
+          },
+          "clash_id": {
+            "title": "Clash Id",
+            "type": "string"
+          },
+          "clause_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clause Text"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "element_gid": {
+            "title": "Element Gid",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "monitor_boundary": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monitor Boundary"
+          },
+          "monitor_geometry": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monitor Geometry"
+          },
+          "monitor_integrity": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monitor Integrity"
+          },
+          "move_type": {
+            "title": "Move Type",
+            "type": "string"
+          },
+          "move_vector": {
+            "items": {
+              "type": "number"
+            },
+            "title": "Move Vector",
+            "type": "array"
+          },
+          "rule_ids": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Rule Ids",
+            "type": "array"
+          },
+          "verdict": {
+            "title": "Verdict",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "clash_id",
+          "element_gid",
+          "move_type",
+          "move_vector",
+          "rule_ids",
+          "clause_text",
+          "verdict",
+          "attempt",
+          "monitor_geometry",
+          "monitor_boundary",
+          "monitor_integrity",
+          "created_at"
+        ],
+        "title": "ProposalOut",
+        "type": "object"
+      },
+      "ReviewEdit": {
+        "description": "A reviewer's own vector. It is re-monitored, never trusted on sight.",
+        "properties": {
+          "move_vector": {
+            "items": {
+              "type": "number"
+            },
+            "maxItems": 3,
+            "minItems": 3,
+            "title": "Move Vector",
+            "type": "array"
+          },
+          "proposal_id": {
+            "title": "Proposal Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "proposal_id",
+          "move_vector"
+        ],
+        "title": "ReviewEdit",
+        "type": "object"
+      },
+      "ReviewIn": {
+        "properties": {
+          "decision": {
+            "enum": [
+              "approve",
+              "reject",
+              "edit"
+            ],
+            "title": "Decision",
+            "type": "string"
+          },
+          "edits": {
+            "items": {
+              "$ref": "#/components/schemas/ReviewEdit"
+            },
+            "title": "Edits",
+            "type": "array"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "reviewer": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Reviewer",
+            "type": "string"
+          }
+        },
+        "required": [
+          "decision",
+          "reviewer"
+        ],
+        "title": "ReviewIn",
+        "type": "object"
+      },
+      "ReviewOut": {
+        "properties": {
+          "change_set_ref": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Set Ref"
+          },
+          "clashes_affected": {
+            "title": "Clashes Affected",
+            "type": "integer"
+          },
+          "decision": {
+            "title": "Decision",
+            "type": "string"
+          },
+          "re_monitored": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Re Monitored",
+            "type": "array"
+          },
+          "zone_id": {
+            "title": "Zone Id",
+            "type": "string"
+          },
+          "zone_status": {
+            "title": "Zone Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "zone_id",
+          "decision",
+          "zone_status",
+          "clashes_affected",
+          "change_set_ref"
+        ],
+        "title": "ReviewOut",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
+      "ZoneOut": {
+        "properties": {
+          "branch": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Branch"
+          },
+          "buffer_m": {
+            "title": "Buffer M",
+            "type": "number"
+          },
+          "congestion": {
+            "title": "Congestion",
+            "type": "number"
+          },
+          "dedicated_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dedicated Reason"
+          },
+          "element_count": {
+            "title": "Element Count",
+            "type": "integer"
+          },
+          "grid_cell": {
+            "title": "Grid Cell",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "level": {
+            "title": "Level",
+            "type": "string"
+          },
+          "priority": {
+            "title": "Priority",
+            "type": "number"
+          },
+          "programme_rank": {
+            "title": "Programme Rank",
+            "type": "integer"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "zone_key": {
+            "title": "Zone Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "zone_key",
+          "level",
+          "grid_cell",
+          "buffer_m",
+          "congestion",
+          "programme_rank",
+          "priority",
+          "status",
+          "element_count"
+        ],
+        "title": "ZoneOut",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "description": "\nJudges MEP coordination on an IFC model, proposes moves that cite a clause, and\nverifies every one of them through three independent monitors before a reviewer\never sees it.\n\nThe model of record is never written to. Proposals are vectors and clause\nreferences, applied by an engineer in the authoring tool; the original file's\nsha256 is reported before and after every run so the promise is evidence rather\nthan a claim.\n",
+    "title": "mep-judge",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/events/{topic}": {
+      "get": {
+        "operationId": "event_stream_events__topic__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "topic",
+            "required": true,
+            "schema": {
+              "title": "Topic",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-API-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Event Stream",
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health",
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/models/{version_id}": {
+      "get": {
+        "operationId": "get_model_models__version_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "title": "Version Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-API-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelVersionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Model",
+        "tags": [
+          "models"
+        ]
+      }
+    },
+    "/models/{version_id}/diff/{previous_id}": {
+      "get": {
+        "operationId": "diff_models_models__version_id__diff__previous_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "title": "Version Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "previous_id",
+            "required": true,
+            "schema": {
+              "title": "Previous Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-API-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiffOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Diff Models",
+        "tags": [
+          "models"
+        ]
+      }
+    },
+    "/models/{version_id}/zones": {
+      "get": {
+        "operationId": "list_zones_models__version_id__zones_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "title": "Version Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-API-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ZoneOut"
+                  },
+                  "title": "Response List Zones Models  Version Id  Zones Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Zones",
+        "tags": [
+          "zones"
+        ]
+      }
+    },
+    "/projects": {
+      "post": {
+        "operationId": "create_project_projects_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-API-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Project",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/projects/{project_id}/keys": {
+      "post": {
+        "operationId": "create_key_projects__project_id__keys_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-API-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_create_key_projects__project_id__keys_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeyIssued"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Key",
+        "tags": [
+          "projects"
+        ]
+      }
+    },
+    "/projects/{project_id}/models": {
+      "post": {
+        "operationId": "upload_model_projects__project_id__models_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "project_id",
+            "required": true,
+            "schema": {
+              "title": "Project Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-API-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_model_projects__project_id__models_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IngestOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Upload Model",
+        "tags": [
+          "models"
+        ]
+      }
+    },
+    "/zones/{zone_id}/bcf.zip": {
+      "get": {
+        "operationId": "get_bcf_zones__zone_id__bcf_zip_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "zone_id",
+            "required": true,
+            "schema": {
+              "title": "Zone Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-API-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Bcf",
+        "tags": [
+          "review"
+        ]
+      }
+    },
+    "/zones/{zone_id}/change_set.json": {
+      "get": {
+        "operationId": "get_change_set_zones__zone_id__change_set_json_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "zone_id",
+            "required": true,
+            "schema": {
+              "title": "Zone Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-API-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Change Set",
+        "tags": [
+          "review"
+        ]
+      }
+    },
+    "/zones/{zone_id}/clashes": {
+      "get": {
+        "operationId": "list_clashes_zones__zone_id__clashes_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "zone_id",
+            "required": true,
+            "schema": {
+              "title": "Zone Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-API-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ClashOut"
+                  },
+                  "title": "Response List Clashes Zones  Zone Id  Clashes Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Clashes",
+        "tags": [
+          "zones"
+        ]
+      }
+    },
+    "/zones/{zone_id}/proposals": {
+      "get": {
+        "operationId": "list_proposals_zones__zone_id__proposals_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "zone_id",
+            "required": true,
+            "schema": {
+              "title": "Zone Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-API-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProposalOut"
+                  },
+                  "title": "Response List Proposals Zones  Zone Id  Proposals Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Proposals",
+        "tags": [
+          "zones"
+        ]
+      }
+    },
+    "/zones/{zone_id}/review": {
+      "post": {
+        "operationId": "review_zone_zones__zone_id__review_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "zone_id",
+            "required": true,
+            "schema": {
+              "title": "Zone Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-API-Key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Api-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Review Zone",
+        "tags": [
+          "review"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "description": "Projects and per-project API keys.",
+      "name": "projects"
+    },
+    {
+      "description": "Model versions, ingest and version diff.",
+      "name": "models"
+    },
+    {
+      "description": "Zones, their clashes and proposals.",
+      "name": "zones"
+    },
+    {
+      "description": "Reviewer decisions, change sets and BCF.",
+      "name": "review"
+    },
+    {
+      "description": "Server-sent progress events.",
+      "name": "events"
+    },
+    {
+      "description": "Health and build identity.",
+      "name": "ops"
+    }
+  ]
+}

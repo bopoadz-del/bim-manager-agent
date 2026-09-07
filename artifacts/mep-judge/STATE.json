@@ -1,0 +1,49 @@
+{
+  "product": "mep-judge",
+  "version": "0.1.0",
+  "kit": {
+    "repo": "https://github.com/bopoadz-del/Cerebrum-Blocks",
+    "path": "block_store/kits/mep_coordination/bundle/app/blocks",
+    "ref": "main",
+    "sha": "d7cff230453efd273388491e1cbf1d18f3ebefd5",
+    "files": 15,
+    "reimplemented": false
+  },
+  "acceptance": {
+    "A1_schependomlaan_pipeline": "PASS",
+    "A2_boundary_trap": "PASS",
+    "A3_gravity_trap": "PASS",
+    "A4_unsourced_trap": "PASS",
+    "A5_rebase": "PASS",
+    "A6_original_untouched": "PASS",
+    "A7_version_diff": "PASS",
+    "A8_deploy": "PARTIAL",
+    "A9_coverage_and_mutation": "PASS"
+  },
+  "quality": {
+    "tests_passed": 107,
+    "tests_failed": 0,
+    "mutants_killed": 8,
+    "mutants_survived": 0,
+    "coverage_statement_pct": 93.8,
+    "coverage_branch_pct": 91,
+    "ruff": "clean",
+    "mypy": "clean",
+    "placeholders": 0
+  },
+  "findings_closed": ["F1","F2","F3","F4","F5","F6","F7","F8","F9","F10","F11","F12","F13"],
+  "blockers_open": [
+    {"id": "B1", "item": "Docker not installed on the build machine", "gate": "ci"},
+    {"id": "B2", "item": "Python 3.12 not installed on the build machine", "gate": "ci"},
+    {"id": "B3", "item": "no Speckle server", "gate": "owner"},
+    {"id": "B4", "item": "no Render service", "gate": "owner"},
+    {"id": "B5", "item": "product has no name", "gate": "owner"},
+    {"id": "B6", "item": "no real project rule or access table", "gate": "owner"}
+  ],
+  "known_limits": [
+    "No clearance rule has fired on a real building model: both public fixtures lack the systems the seed rules name.",
+    "Connectivity is unprovable on every real model tested; neither public model carries IfcDistributionPort.",
+    "No project has supplied an access-zone table, so that check reports unprovable outside its own fixture.",
+    "SpeckleModelStore has never run against a live server."
+  ]
+}

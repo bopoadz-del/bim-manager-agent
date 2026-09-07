@@ -1,0 +1,41 @@
+[
+  {
+    "rule_id": "MEP-GAS-LV-400",
+    "system_a": "gas_main",
+    "system_b": "electrical_lv",
+    "min_gap_mm": 400,
+    "axis": "any",
+    "source": {
+      "doc": "DD-2023-118_DG2 Infra P1_Vol 3 – Drawings (3 of 7).pdf / IP-INF-053-0000-JCB-DWG-LP-600-0000002 A",
+      "clause": "NOTES item 5",
+      "text_hash": "2d085ef2123b39a9"
+    },
+    "precedence": "project_spec"
+  },
+  {
+    "rule_id": "MEP-GAS-ANY-300",
+    "system_a": "gas_main",
+    "system_b": "*",
+    "min_gap_mm": 300,
+    "axis": "any",
+    "source": {
+      "doc": "DD-2023-118_DG2 Infra P1_Vol 3 – Drawings (3 of 7).pdf / IP-INF-053-0000-JCB-DWG-LP-600-0000002 A",
+      "clause": "NOTES item 6",
+      "text_hash": "2d085ef2123b39a9"
+    },
+    "precedence": "project_spec"
+  },
+  {
+    "rule_id": "MEP-GAS-BLDG-5000",
+    "system_a": "gas_main",
+    "system_b": "building",
+    "min_gap_mm": 5000,
+    "axis": "any",
+    "source": {
+      "doc": "DD-2023-118_DG2 Infra P1_Vol 3 – Drawings (3 of 7).pdf / IP-INF-053-0000-JCB-DWG-LP-600-0000002 A",
+      "clause": "NOTES item 4",
+      "text_hash": "2d085ef2123b39a9"
+    },
+    "precedence": "project_spec"
+  }
+]

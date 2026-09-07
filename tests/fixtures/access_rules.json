@@ -1,0 +1,15 @@
+[
+  {
+    "rule_id": "TEST-ACCESS-DUCT-600",
+    "system_a": "ventilation",
+    "system_b": "*",
+    "min_gap_mm": 600.0,
+    "axis": "any",
+    "precedence": "project_spec",
+    "source": {
+      "doc": "tests/fixtures/access_rules.json (TEST FIXTURE - NOT A REAL CODE)",
+      "clause": "fixture note 1",
+      "text_hash": "fixture-not-authoritative"
+    }
+  }
+]

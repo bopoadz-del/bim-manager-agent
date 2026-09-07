@@ -1,0 +1,76 @@
+name: mep-judge
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: mepj
+      POSTGRES_PASSWORD: mepj
+      POSTGRES_DB: mepj
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mepj"]
+      interval: 5s
+      retries: 12
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 12
+
+  # A local Speckle server for development. Without it the service falls back to
+  # the local model store and says so at /health -- it does not pretend.
+  speckle:
+    image: speckle/speckle-server:2
+    environment:
+      CANONICAL_URL: http://localhost:3000
+      POSTGRES_URL: postgres://mepj:mepj@db:5432/mepj
+      REDIS_URL: redis://redis
+      SESSION_SECRET: dev-only-not-a-secret
+    depends_on:
+      db: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    ports: ["3000:3000"]
+    profiles: ["speckle"]
+
+  api:
+    build:
+      context: .
+      args:
+        BUILD_SHA: ${BUILD_SHA:-dev}
+    environment:
+      MEPJ_DATABASE_URL: postgresql+psycopg://mepj:mepj@db:5432/mepj
+      MEPJ_REDIS_URL: redis://redis:6379
+      MEPJ_ARTIFACTS_DIR: /data/artifacts
+      MEPJ_UPLOAD_DIR: /data/uploads
+      MEPJ_BUILD_SHA: ${BUILD_SHA:-dev}
+      MEPJ_BOOTSTRAP_API_KEY: ${MEPJ_BOOTSTRAP_API_KEY:-dev-bootstrap-key}
+    depends_on:
+      db: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    ports: ["8000:8000"]
+    volumes:
+      - app-data:/data
+
+  worker:
+    build:
+      context: .
+      args:
+        BUILD_SHA: ${BUILD_SHA:-dev}
+    command: ["arq", "app.worker.tasks.WorkerSettings"]
+    environment:
+      MEPJ_DATABASE_URL: postgresql+psycopg://mepj:mepj@db:5432/mepj
+      MEPJ_REDIS_URL: redis://redis:6379
+      MEPJ_ARTIFACTS_DIR: /data/artifacts
+      MEPJ_UPLOAD_DIR: /data/uploads
+    depends_on:
+      api: {condition: service_started}
+    volumes:
+      - app-data:/data
+
+volumes:
+  db-data:
+  app-data:

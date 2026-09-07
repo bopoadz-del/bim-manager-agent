@@ -1,0 +1,57 @@
+services:
+  - type: web
+    name: mep-judge-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: standard
+    healthCheckPath: /health
+    envVars:
+      - key: MEPJ_DATABASE_URL
+        fromDatabase: {name: mep-judge-db, property: connectionString}
+      - key: MEPJ_REDIS_URL
+        fromService: {name: mep-judge-redis, type: redis, property: connectionString}
+      - key: MEPJ_ARTIFACTS_DIR
+        value: /var/data/artifacts
+      - key: MEPJ_UPLOAD_DIR
+        value: /var/data/uploads
+      # Render exposes the deployed commit; /health echoes it so a reader can
+      # confirm which code answered them.
+      - key: MEPJ_BUILD_SHA
+        fromService: {name: mep-judge-api, type: web, envVarKey: RENDER_GIT_COMMIT}
+      - key: MEPJ_BOOTSTRAP_API_KEY
+        generateValue: true
+      - key: MEPJ_SPECKLE_HOST
+        sync: false
+      - key: MEPJ_SPECKLE_TOKEN
+        sync: false
+    disk:
+      name: mep-judge-data
+      mountPath: /var/data
+      sizeGB: 20
+
+  - type: worker
+    name: mep-judge-worker
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerCommand: arq app.worker.tasks.WorkerSettings
+    plan: standard
+    envVars:
+      - key: MEPJ_DATABASE_URL
+        fromDatabase: {name: mep-judge-db, property: connectionString}
+      - key: MEPJ_REDIS_URL
+        fromService: {name: mep-judge-redis, type: redis, property: connectionString}
+      - key: MEPJ_ARTIFACTS_DIR
+        value: /var/data/artifacts
+      - key: MEPJ_UPLOAD_DIR
+        value: /var/data/uploads
+
+  - type: redis
+    name: mep-judge-redis
+    plan: starter
+    maxmemoryPolicy: noeviction
+    ipAllowList: []
+
+databases:
+  - name: mep-judge-db
+    plan: standard
+    postgresMajorVersion: "16"

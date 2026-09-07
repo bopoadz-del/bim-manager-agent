@@ -1,0 +1,15 @@
+{
+  "status": "ok",
+  "build_sha": "test-sha",
+  "database": "ok",
+  "store": {
+    "backend": "local",
+    "reason": "no Speckle token configured"
+  },
+  "exact_geometry_backend": true,
+  "vendored_kit": {
+    "pinned": true,
+    "sha": "d7cff230453efd273388491e1cbf1d18f3ebefd5",
+    "files": 15
+  }
+}

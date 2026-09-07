@@ -1,0 +1,30 @@
+{
+  "clashes": 1,
+  "proposals": 4,
+  "boundary_objections": 1,
+  "escalated": 1,
+  "objection_reasons": [
+    "nothing_pushed_into_neighbour: move creates 2 finding(s) in neighbouring zones Level 00|0_-1, Level 00|1_0"
+  ],
+  "alternatives_tried": [
+    {
+      "clash": "272BmvQkvHivz7yxFVd65a::38fJLopC1UDxB4R3mFk6t_",
+      "attempts": 3,
+      "state": "escalated"
+    }
+  ],
+  "ledger": {
+    "272BmvQkvHivz7yxFVd65a::38fJLopC1UDxB4R3mFk6t_": [
+      [
+        null,
+        "open",
+        "system"
+      ],
+      [
+        "open",
+        "escalated",
+        "system"
+      ]
+    ]
+  }
+}

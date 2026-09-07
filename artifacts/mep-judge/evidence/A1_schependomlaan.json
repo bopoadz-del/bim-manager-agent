@@ -1,0 +1,90 @@
+{
+  "elements": 1437,
+  "ifc_sha256": "2c3565ca1904f2aa61adab92024cf3755b2c5b21a498144d3094d7cb58cebec7",
+  "zones": 11,
+  "zones_awaiting_review": 8,
+  "clashes": 7,
+  "joints_excluded": 2,
+  "pairs_admitted": 80,
+  "pairs_possible": 1031766,
+  "verified_proposals": 7,
+  "boundary_owned": 7,
+  "rules_never_applied": [
+    {
+      "rule_id": "MEP-GAS-LV-400",
+      "systems": "gas_main <-> electrical_lv",
+      "absent_from_model": "gas_main, electrical_lv",
+      "consequence": "this rule was never applied to any pair"
+    },
+    {
+      "rule_id": "MEP-GAS-ANY-300",
+      "systems": "gas_main <-> *",
+      "absent_from_model": "gas_main",
+      "consequence": "this rule was never applied to any pair"
+    },
+    {
+      "rule_id": "MEP-GAS-BLDG-5000",
+      "systems": "gas_main <-> building",
+      "absent_from_model": "gas_main, building",
+      "consequence": "this rule was never applied to any pair"
+    }
+  ],
+  "top_zone_priorities": [
+    {
+      "zone": "00 begane grond|-1_2+16",
+      "priority": 0.670836,
+      "congestion": 0.0031183630776731703,
+      "elements": 359,
+      "status": "awaiting_review"
+    },
+    {
+      "zone": "01 eerste verdieping|-1_2+16",
+      "priority": 0.522192,
+      "congestion": 0.0021819221362138885,
+      "elements": 304,
+      "status": "awaiting_review"
+    },
+    {
+      "zone": "02 tweede verdieping|0_0+14",
+      "priority": 0.396271,
+      "congestion": 0.0014127119496917012,
+      "elements": 255,
+      "status": "awaiting_review"
+    },
+    {
+      "zone": "03 derde verdieping|0_0+11",
+      "priority": 0.178,
+      "congestion": 0.0,
+      "elements": 178,
+      "status": "awaiting_review"
+    },
+    {
+      "zone": "riser_or_shaft|structure",
+      "priority": 0.141,
+      "congestion": 0.0,
+      "elements": 141,
+      "status": "awaiting_review"
+    },
+    {
+      "zone": "-1 fundering|-1_2+15",
+      "priority": 0.133,
+      "congestion": 0.0,
+      "elements": 133,
+      "status": "awaiting_review"
+    },
+    {
+      "zone": "04 dak|1_0+8",
+      "priority": 0.038,
+      "congestion": 0.0,
+      "elements": 38,
+      "status": "awaiting_review"
+    },
+    {
+      "zone": "riser_or_shaft|drainage_storm",
+      "priority": 0.022,
+      "congestion": 0.0,
+      "elements": 22,
+      "status": "awaiting_review"
+    }
+  ]
+}

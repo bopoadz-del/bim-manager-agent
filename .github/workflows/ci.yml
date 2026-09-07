@@ -1,0 +1,140 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  PYTHONPATH: .
+  MEPJ_DATABASE_URL: postgresql+psycopg://mepj:mepj@localhost:5432/mepj
+  MEPJ_REDIS_URL: redis://localhost:6379
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: mepj
+          POSTGRES_PASSWORD: mepj
+          POSTGRES_DB: mepj
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U mepj" --health-interval 5s
+          --health-timeout 5s --health-retries 12
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 5s
+          --health-timeout 5s --health-retries 12
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: System libraries for geometry
+        run: sudo apt-get update && sudo apt-get install -y libgl1 libglib2.0-0 libgomp1
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      # The kit is the product's judgement. A hand-edited vendored block means
+      # nobody can say what judged a model, so this runs before anything else.
+      - name: Vendored kit matches its pin
+        run: python scripts/vendor_kit.py --check
+
+      - name: No placeholders
+        run: |
+          if grep -rnE "TODO|FIXME|NotImplementedError|pass  # stub|raise NotImplemented" \
+               app/ scripts/ --include="*.py" | grep -v "^vendor/"; then
+            echo "::error::placeholder found -- finish it or remove it"
+            exit 1
+          fi
+          echo "no placeholders"
+
+      - name: Secret scan (fail closed)
+        env:
+          SECRET_SCAN_PATTERNS: ${{ secrets.SECRET_SCAN_PATTERNS }}
+        run: |
+          # Fail closed: an unset pattern list means the scan did not run, which
+          # is not the same as finding nothing, and must not read as a pass.
+          if [ -z "${SECRET_SCAN_PATTERNS}" ]; then
+            PATTERNS='(sk-[A-Za-z0-9]{20,}|ghp_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----|xox[baprs]-[A-Za-z0-9-]{10,})'
+            echo "SECRET_SCAN_PATTERNS unset; using the built-in pattern set"
+          else
+            PATTERNS="${SECRET_SCAN_PATTERNS}"
+          fi
+          if grep -rInE "${PATTERNS}" --exclude-dir=.git --exclude-dir=vendor . ; then
+            echo "::error::possible secret committed"
+            exit 1
+          fi
+          echo "secret scan clean"
+
+      - name: ruff
+        run: ruff check app scripts tests
+
+      - name: mypy
+        run: mypy app
+
+      - name: Migration up, down, up
+        run: |
+          alembic upgrade head
+          alembic downgrade base
+          alembic upgrade head
+
+      - name: Fetch acceptance fixtures
+        run: ./scripts/fetch_fixtures.sh || echo "large fixtures unavailable; A1 will skip"
+
+      - name: Tests with coverage
+        run: |
+          pytest tests -q \
+            --cov=app --cov=app/agents --cov=app/monitors --cov-branch \
+            --cov-report=term-missing --cov-report=xml
+
+      - name: Coverage floor on agents and monitors
+        run: python scripts/check_coverage.py --min 85 app/agents app/monitors
+
+      - name: Mutation probes
+        run: python scripts/mutation_probes.py
+
+      - name: OpenAPI schema diff
+        run: |
+          python scripts/dump_openapi.py openapi.generated.json
+          if ! diff -u openapi.json openapi.generated.json; then
+            echo "::error::the OpenAPI schema changed. Review the diff, then commit openapi.json."
+            exit 1
+          fi
+          echo "openapi schema unchanged"
+
+      - name: Docker build
+        run: docker build --build-arg BUILD_SHA=${GITHUB_SHA} -t mep-judge:ci .
+
+      - name: Container serves /health with the build sha
+        run: |
+          docker run -d --name mepj -p 8000:8000 \
+            -e MEPJ_DATABASE_URL=sqlite+pysqlite:////tmp/mepj.db \
+            -e MEPJ_BUILD_SHA=${GITHUB_SHA} mep-judge:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:8000/health > /tmp/health.json; then break; fi
+            sleep 2
+          done
+          cat /tmp/health.json
+          python - <<'PY'
+          import json, os, sys
+          health = json.load(open("/tmp/health.json"))
+          assert health["status"] == "ok", health
+          assert health["build_sha"] == os.environ["GITHUB_SHA"], health
+          assert health["vendored_kit"]["pinned"] is True, health
+          print("health ok:", health["build_sha"])
+          PY
+          docker rm -f mepj
