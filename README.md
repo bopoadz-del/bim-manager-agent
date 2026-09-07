@@ -1,4 +1,6 @@
-# mep-judge
+# BIM Manager agent
+
+*(package and image name: `mep-judge`)*
 
 A deployable service that takes an IFC model, finds the MEP clashes and clearance
 violations that are real, proposes moves that cite a clause, verifies every one of
@@ -165,8 +167,8 @@ through the production loader — the pipeline cannot tell them from a real mode
 
 - [`artifacts/mep-judge/ACCEPTANCE.md`](artifacts/mep-judge/ACCEPTANCE.md) — A1–A9
   with measured evidence, and a closing section on what is *not* proven.
-- [`artifacts/mep-judge/RUNLOG.md`](artifacts/mep-judge/RUNLOG.md) — thirteen
+- [`artifacts/mep-judge/RUNLOG.md`](artifacts/mep-judge/RUNLOG.md) — fourteen
   findings, including the one that matters most: **the seed rule table cannot fire
   on either public model, and failed silently until it was made to report itself.**
 - [`artifacts/mep-judge/MORNING_LIST.md`](artifacts/mep-judge/MORNING_LIST.md) —
-  the six remaining blockers and who clears each.
+  the remaining blockers and who clears each.

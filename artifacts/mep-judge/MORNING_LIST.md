@@ -1,6 +1,6 @@
-# MORNING LIST — mep-judge
+# MORNING LIST — BIM Manager agent
 
-**Four blockers remain, all owner-gated.** B1 and B2 are cleared: CI
+**Three blockers remain, all owner-gated.** The product is named: **BIM Manager agent** (B5 cleared; `mep-judge` remains the package, image and repository name). B1 and B2 are cleared: CI
 (https://github.com/bopoadz-del/mep-judge/actions/runs/34109449830) builds the image, runs the container, checks `/health` against the commit
 sha, and runs all 107 tests on Python 3.12 including A1 against the real 47 MB
 model.
@@ -9,7 +9,6 @@ model.
 |---|---|---|---|
 | B3 | No Speckle server | owner: `MEPJ_SPECKLE_HOST` + `MEPJ_SPECKLE_TOKEN` | 3D diff in the review UI; the Speckle store path |
 | B4 | No Render service | owner: Render account, `render blueprint launch` | the deploy half of A8 |
-| B5 | The product has no name | owner | package, image and service names |
 | B6 | No real project rule/access table | owner: a spec to extract from, an engineer to approve | clearance and access checks on a real building |
 
 **Nothing else is parked.** Every finding in RUNLOG F1–F13 is fixed in the code,

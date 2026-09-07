@@ -1,5 +1,5 @@
 {
-  "product": "mep-judge",
+  "product": "BIM Manager agent",
   "version": "0.1.0",
   "kit": {
     "repo": "https://github.com/bopoadz-del/Cerebrum-Blocks",
@@ -60,11 +60,6 @@
       "gate": "owner"
     },
     {
-      "id": "B5",
-      "item": "product has no name",
-      "gate": "owner"
-    },
-    {
       "id": "B6",
       "item": "no real project rule or access table",
       "gate": "owner"
@@ -86,5 +81,6 @@
     "mutants_killed": 8,
     "docker_build": "pass",
     "container_health_matches_commit": true
-  }
+  },
+  "package": "mep-judge"
 }
