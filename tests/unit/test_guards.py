@@ -307,8 +307,39 @@ def test_a_malformed_alias_table_raises_rather_than_being_ignored(tmp_path):
         load_system_aliases(missing_key)
 
 
-def test_an_absent_alias_table_is_simply_no_aliases(tmp_path):
-    from app.kit.systems import load_system_aliases
+def test_an_absent_project_table_falls_back_to_the_shipped_one(tmp_path):
+    """The default is the bilingual table, not silence.
 
-    assert load_system_aliases(None) == []
-    assert load_system_aliases(tmp_path / "nope.json") == []
+    This used to return no aliases at all, which meant the only real model
+    available classified thirteen ventilation grilles as `unknown` -- their
+    Dutch name is "vent. rooster" and the kit's English hint list cannot reach
+    it. No rule could then apply to them, and the model reported less than it
+    held.
+    """
+    from app.kit.systems import default_aliases, load_system_aliases
+
+    shipped = len(default_aliases())
+    assert shipped >= 10
+    assert len(load_system_aliases(None)) == shipped
+    assert len(load_system_aliases(tmp_path / "nope.json")) == shipped
+
+
+def test_a_project_table_extends_the_shipped_one_rather_than_replacing_it(tmp_path):
+    from app.kit.systems import default_aliases, load_system_aliases
+
+    table = tmp_path / "aliases.json"
+    table.write_text(
+        json.dumps({"aliases": [{"pattern": "widget", "system": "ventilation"}]}),
+        encoding="utf-8",
+    )
+    loaded = load_system_aliases(table)
+    assert len(loaded) == len(default_aliases()) + 1
+    assert loaded[0].pattern.search("a widget"), "the project's own entry must win"
+
+
+def test_storm_drainage_is_matched_before_foul():
+    """"hwa afvoer" is rainwater and contains the word for foul drainage."""
+    from app.kit.systems import default_aliases
+
+    matched = next(a for a in default_aliases() if a.pattern.search("hwa afvoer"))
+    assert matched.system == "drainage_storm"

@@ -13,12 +13,21 @@ Run: python scripts/mutation_probes.py
 """
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+
+#: Written while a mutation is applied, removed when it is restored. If a run is
+#: killed mid-probe -- a timeout, a Ctrl-C -- the finally clause never runs and a
+#: deliberately sabotaged module is left on disk. That happened once here: a
+#: monitor sat with its comparison stubbed out to [], [] and the next run
+#: reported the probe as a stale anchor rather than as the emergency it was.
+#: The marker turns a silent sabotage into a refusal to start.
+IN_FLIGHT = ROOT / ".mutation_in_flight"
 
 
 @dataclass
@@ -88,11 +97,30 @@ PROBES = [
         breaks="'we could not check this' would read as 'we checked and it is fine'",
     ),
     Probe(
-        name="rules_load_without_a_citation",
-        target="app/agents/coordinator.py",
-        find="    rules = list(clearance_rules.load_rules(str(KIT_SEED_RULES)))",
-        replace="    rules = list(clearance_rules.load_rules(str(KIT_SEED_RULES)))  # MUTANT",
-        tests=["tests/acceptance/test_acceptance.py::test_A4_a_move_that_needs_a_stripped_rule_is_flagged_not_proposed"],
+        name="public_rules_bypass_the_citation_check",
+        target="app/rules/__init__.py",
+        find='        rule["source"] = {k: record["source"][k] for k in SOURCE_FIELDS}',
+        replace='        rule.pop("source", None)  # MUTANT',
+        tests=["tests/unit/test_public_rules.py"],
+        breaks="public rules would reach the table without the clause they cite",
+    ),
+    Probe(
+        name="scope_gate_stops_withholding",
+        target="app/rules/__init__.py",
+        find='        if not record.get("scope_inferable", False):',
+        replace="        if False:  # MUTANT",
+        tests=["tests/unit/test_public_rules.py"],
+        breaks=(
+            "rules whose scope IFC cannot establish would be applied anyway -- "
+            "ASHRAE's intake-to-vent 3 m becoming 3 m between every duct and drain"
+        ),
+    ),
+    Probe(
+        name="inert_control",
+        target="app/rules/__init__.py",
+        find="RULES_FILE = Path(__file__).resolve().parent / \"public_seed_rules.json\"",
+        replace="RULES_FILE = Path(__file__).resolve().parent / \"public_seed_rules.json\"  # MUTANT",
+        tests=["tests/unit/test_public_rules.py"],
         breaks="(control probe: an inert edit; these tests must still pass)",
     ),
     Probe(
@@ -131,7 +159,18 @@ PROBES = [
 
 #: Probes whose tests are expected to stay green. A control that goes red means
 #: the harness itself is broken, not that the suite is good.
-CONTROLS = {"rules_load_without_a_citation"}
+CONTROLS = {"inert_control"}
+
+
+def restore_from_marker() -> str | None:
+    """Undo a mutation left behind by a killed run. Returns what it repaired."""
+    if not IN_FLIGHT.exists():
+        return None
+    payload = json.loads(IN_FLIGHT.read_text(encoding="utf-8"))
+    target = ROOT / payload["target"]
+    target.write_text(payload["source"], encoding="utf-8", newline=chr(10))
+    IN_FLIGHT.unlink()
+    return f"{payload['probe']} in {payload['target']}"
 
 
 def run_tests(tests: list[str]) -> tuple[bool, str]:
@@ -146,6 +185,12 @@ def run_tests(tests: list[str]) -> tuple[bool, str]:
 
 
 def main() -> int:
+    repaired = restore_from_marker()
+    if repaired:
+        print(f"RECOVERED a mutation left by a killed run: {repaired}")
+        print("         Re-run to get a clean result.")
+        return 1
+
     survivors, controls_failed, killed = [], [], []
 
     for probe in PROBES:
@@ -155,11 +200,16 @@ def main() -> int:
             survivors.append(f"{probe.name} (anchor missing -- probe is stale)")
             continue
 
+        IN_FLIGHT.write_text(
+            json.dumps({"probe": probe.name, "target": probe.target, "source": source}),
+            encoding="utf-8",
+        )
         probe.path.write_text(source.replace(probe.find, probe.replace, 1), encoding="utf-8")
         try:
             passed, tail = run_tests(probe.tests)
         finally:
             probe.path.write_text(source, encoding="utf-8")
+            IN_FLIGHT.unlink(missing_ok=True)
 
         is_control = probe.name in CONTROLS
         if is_control:

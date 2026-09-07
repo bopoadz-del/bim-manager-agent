@@ -23,7 +23,7 @@ from app.blocks import clearance_rules
 from app.blocks.clash_resolver import preserves_fall
 from app.kit.engine import translated
 from app.monitors.base import FAIL, PASS, UNPROVABLE, Check, Monitor, MonitorContext, MonitorResult
-from app.monitors.geometry import judge_against
+from app.monitors.geometry import in_range, judge_against, reach_m
 
 # How far a joined element may move before the joint is considered broken. A
 # fitting and its pipe are modelled coincident; any real separation is a break.
@@ -115,6 +115,7 @@ def _clearance_check(ctx: MonitorContext) -> Check:
         if g != ctx.element_gid
     ]
     scope = [s for s in scope if s is not None]
+    scope = in_range(element, scope, reach_m(ctx))
     moved = translated(element, ctx.vector_mm)
     findings = list(judge_against(moved, scope, ctx.rules).values())
     violations = clearance_rules.evaluate(findings, ctx.rules)
@@ -168,6 +169,7 @@ def _access_check(ctx: MonitorContext) -> Check:
         if g != ctx.element_gid
     ]
     scope = [s for s in scope if s is not None]
+    scope = in_range(element, scope, reach_m(ctx))
     moved = translated(element, ctx.vector_mm)
     findings = list(judge_against(moved, scope, ctx.access_rules).values())
     violations = clearance_rules.evaluate(findings, ctx.access_rules)

@@ -1,0 +1,231 @@
+{
+  "note": "Clearance requirements transcribed from public standards. READ verification BELOW BEFORE RELYING ON ANY NUMBER HERE.",
+  "verification": {
+    "status": "unverified_transcription",
+    "meaning": "These figures were transcribed from public standards by the author of this repository, who did not have the source documents open. The clause references are the author's best identification and several are not certain. No engineer has checked them.",
+    "consequence": "Every finding produced by one of these rules carries rule_verification: unverified, and every change-set entry derived from one says so. That marker is the point: the citation exists so an engineer can open the standard and check it, which is the only thing that makes a number in this file usable.",
+    "before_production_use": "Confirm each clause against the edition in force for the project's jurisdiction, set verified to true with the checker's name and date, and re-run. Editions differ: NEC working-space depth varies by voltage and condition, NFPA 13 clause numbering changed between editions, and IPC slope depends on pipe diameter.",
+    "not_included": "A hot-surface / insulation clearance was asked for and is deliberately absent. The figure varies by appliance type, insulation and construction, and no clause could be identified with enough confidence to write down. Adding one to reach a count is precisely the failure this file exists to avoid: a number an engineer would move a duct to satisfy, sourced to a clause nobody could check.",
+    "scope_finding": "Most published clearance rules cannot be applied from IFC geometry alone. Their scope depends on conditions a model does not carry: whether equipment requires examination while energized, whether a hole is bored through wood, whether a duct has an access door, whether what sits below a sprinkler is storage. Seven of the nine separation rules here are withheld for that reason and say so individually in scope_note. Applying them anyway would flood a coordination report with requirements the standard does not actually impose -- the same noise this product exists to remove, wearing a citation."
+  },
+  "rules": [
+    {
+      "rule_id": "NEC-2023-110.26-A1-DEPTH",
+      "standard": "NFPA 70 (National Electrical Code)",
+      "edition": "2023",
+      "system_a": "electrical_lv",
+      "system_b": "*",
+      "min_gap_mm": 914,
+      "axis": "horizontal",
+      "precedence": "code",
+      "source": {
+        "doc": "NFPA 70 (NEC) 2023",
+        "clause": "110.26(A)(1) working space depth, Condition 1, 0-150 V to ground",
+        "text_hash": "unverified-nec-110-26-a1"
+      },
+      "quote": "Depth of working space in the direction of live parts: 900 mm (3 ft) for Condition 1 at 0-150 V nominal to ground.",
+      "verified": false,
+      "confidence": "high on the 3 ft / 914 mm figure and on 110.26(A)(1); the value is conditional on voltage and on Condition 1/2/3, which this rule does not model.",
+      "scope_inferable": false,
+      "scope_note": "Applies to working space in front of equipment 'likely to require examination while energized' -- panels, switchboards, controllers. IFC does not say which electrical elements those are, and applying it to every LV element would demand 914 mm around every cable tray in the building."
+    },
+    {
+      "rule_id": "NEC-2023-110.26-A2-WIDTH",
+      "standard": "NFPA 70 (National Electrical Code)",
+      "edition": "2023",
+      "system_a": "electrical_lv",
+      "system_b": "*",
+      "min_gap_mm": 762,
+      "axis": "horizontal",
+      "precedence": "code",
+      "source": {
+        "doc": "NFPA 70 (NEC) 2023",
+        "clause": "110.26(A)(2) width of working space",
+        "text_hash": "unverified-nec-110-26-a2"
+      },
+      "quote": "Width of working space: 762 mm (30 in.) or the width of the equipment, whichever is greater.",
+      "verified": false,
+      "confidence": "high on 30 in / 762 mm and on 110.26(A)(2).",
+      "scope_inferable": false,
+      "scope_note": "Same scope condition as 110.26(A)(1)."
+    },
+    {
+      "rule_id": "NEC-2023-110.26-A3-HEADROOM",
+      "standard": "NFPA 70 (National Electrical Code)",
+      "edition": "2023",
+      "system_a": "electrical_lv",
+      "system_b": "*",
+      "min_gap_mm": 1981,
+      "axis": "vertical",
+      "precedence": "code",
+      "source": {
+        "doc": "NFPA 70 (NEC) 2023",
+        "clause": "110.26(A)(3) height of working space",
+        "text_hash": "unverified-nec-110-26-a3"
+      },
+      "quote": "Height of working space: 2.0 m (6 1/2 ft) or the height of the equipment, whichever is greater.",
+      "verified": false,
+      "confidence": "high on 6.5 ft / 1981 mm and on 110.26(A)(3).",
+      "scope_inferable": false,
+      "scope_note": "Same scope condition as 110.26(A)(1)."
+    },
+    {
+      "rule_id": "NEC-2023-300.4-A1-FRAMING",
+      "standard": "NFPA 70 (National Electrical Code)",
+      "edition": "2023",
+      "system_a": "electrical_lv",
+      "system_b": "structure",
+      "min_gap_mm": 32,
+      "axis": "any",
+      "precedence": "code",
+      "source": {
+        "doc": "NFPA 70 (NEC) 2023",
+        "clause": "300.4(A)(1) cables through bored holes in wood members",
+        "text_hash": "unverified-nec-300-4-a1"
+      },
+      "quote": "Holes bored in wood members: edge of the hole not less than 32 mm (1 1/4 in.) from the nearest edge of the member.",
+      "verified": false,
+      "confidence": "high on 1 1/4 in / 32 mm and on 300.4(A)(1).",
+      "scope_inferable": false,
+      "scope_note": "Applies to cables passing through bored holes in WOOD framing members. IFC carries neither the material condition nor the fact of a bored hole, so applying it to every cable-versus-structure pair would be a different rule."
+    },
+    {
+      "rule_id": "NFPA13-2022-DEFLECTOR-457",
+      "standard": "NFPA 13 (Standard for the Installation of Sprinkler Systems)",
+      "edition": "2022",
+      "system_a": "fire_sprinkler",
+      "system_b": "*",
+      "min_gap_mm": 457,
+      "axis": "vertical",
+      "precedence": "code",
+      "source": {
+        "doc": "NFPA 13 2022",
+        "clause": "clearance to storage below sprinkler deflectors",
+        "text_hash": "unverified-nfpa13-deflector"
+      },
+      "quote": "A minimum of 457 mm (18 in.) clearance shall be maintained below sprinkler deflectors to the top of storage.",
+      "verified": false,
+      "confidence": "high on the 18 in / 457 mm figure; LOW on the clause number, which moved between editions. Identify the clause in the edition in force before relying on this.",
+      "scope_inferable": false,
+      "scope_note": "Governs clearance from a sprinkler deflector to the top of STORAGE. A model has no storage; applying it to every element under a sprinkler is not this rule."
+    },
+    {
+      "rule_id": "IPC-2021-704.1-SLOPE-SMALL",
+      "standard": "International Plumbing Code",
+      "edition": "2021",
+      "system_a": "drainage_foul",
+      "system_b": "*",
+      "min_gap_mm": 21,
+      "axis": "vertical",
+      "precedence": "code",
+      "source": {
+        "doc": "IPC 2021",
+        "clause": "704.1 slope of horizontal drainage piping, 2 1/2 in. and smaller",
+        "text_hash": "unverified-ipc-704-1"
+      },
+      "quote": "Horizontal drainage piping 2 1/2 in. and smaller shall be installed at a slope of not less than 1/4 in. per foot (2.08 percent).",
+      "verified": false,
+      "confidence": "high on 1/4 in per foot for <=2 1/2 in and on 704.1. NOTE: this is a SLOPE, not a separation. The 21 mm figure is the fall over one metre; the fall check in IntegrityMonitor is the real enforcement and this record exists to cite it.",
+      "applies_as": "slope_citation_only"
+    },
+    {
+      "rule_id": "IMC-2021-307.2.1-CONDENSATE-SLOPE",
+      "standard": "International Mechanical Code",
+      "edition": "2021",
+      "system_a": "condensate",
+      "system_b": "*",
+      "min_gap_mm": 10,
+      "axis": "vertical",
+      "precedence": "code",
+      "source": {
+        "doc": "IMC 2021",
+        "clause": "307.2.1 condensate disposal, slope of drain piping",
+        "text_hash": "unverified-imc-307-2-1"
+      },
+      "quote": "Condensate drain piping shall be sloped not less than 1/8 unit vertical in 12 units horizontal (1-percent slope).",
+      "verified": false,
+      "confidence": "medium on the clause number; high that IMC requires a 1 percent condensate slope. Slope citation, like the IPC entry.",
+      "applies_as": "slope_citation_only"
+    },
+    {
+      "rule_id": "ASHRAE-62.1-2022-INTAKE-EXHAUST",
+      "standard": "ASHRAE 62.1 (Ventilation for Acceptable Indoor Air Quality)",
+      "edition": "2022",
+      "system_a": "ventilation",
+      "system_b": "drainage_foul",
+      "min_gap_mm": 3048,
+      "axis": "any",
+      "precedence": "code",
+      "source": {
+        "doc": "ASHRAE 62.1 2022",
+        "clause": "Table 5.5.1 air intake minimum separation distance, plumbing vents",
+        "text_hash": "unverified-ashrae-62-1-t5-5-1"
+      },
+      "quote": "Minimum separation between an outdoor air intake and a plumbing vent terminating less than 3 m (10 ft) above the intake: 3 m (10 ft).",
+      "verified": false,
+      "confidence": "high on 10 ft / 3048 mm for plumbing vents; MEDIUM on the table number, which is 5.5.1 in recent editions and was 5.5.1/5-1 in others.",
+      "scope_inferable": false,
+      "scope_note": "Governs an OUTDOOR AIR INTAKE against a PLUMBING VENT TERMINAL. Applied as ventilation-versus-foul-drainage it demands 3 m between every duct and every drain in the building, which is not what the table says by a wide margin."
+    },
+    {
+      "rule_id": "SMACNA-DUCT-ACCESS-457",
+      "standard": "SMACNA HVAC Duct Construction Standards - Metal and Flexible",
+      "edition": "4th edition",
+      "system_a": "ventilation",
+      "system_b": "*",
+      "min_gap_mm": 457,
+      "axis": "any",
+      "precedence": "code",
+      "source": {
+        "doc": "SMACNA HVAC Duct Construction Standards, 4th ed.",
+        "clause": "access door clearance for maintenance",
+        "text_hash": "unverified-smacna-access"
+      },
+      "quote": "Provide not less than 457 mm (18 in.) clear working space at duct access doors.",
+      "verified": false,
+      "confidence": "medium. 18 in is the widely applied figure for access-door clearance; the clause reference is a description rather than a numbered section and should be replaced with the project's own specification reference.",
+      "scope_inferable": false,
+      "scope_note": "Governs clear working space at duct ACCESS DOORS. IFC does not identify access doors, so applying it to every duct against everything overstates it."
+    },
+    {
+      "rule_id": "NFPA13-2022-SPRINKLER-TO-WALL-102",
+      "standard": "NFPA 13 (Standard for the Installation of Sprinkler Systems)",
+      "edition": "2022",
+      "system_a": "fire_sprinkler",
+      "system_b": "structure",
+      "min_gap_mm": 102,
+      "axis": "horizontal",
+      "precedence": "code",
+      "source": {
+        "doc": "NFPA 13 2022",
+        "clause": "minimum distance from a sprinkler to a wall",
+        "text_hash": "unverified-nfpa13-wall"
+      },
+      "quote": "Sprinklers shall be located not less than 102 mm (4 in.) from a wall.",
+      "verified": false,
+      "confidence": "high on the 4 in / 102 mm figure, which is long-standing across editions; LOW on the clause number.",
+      "scope_inferable": true,
+      "scope_note": "Sprinkler against wall is directly expressible: both sides are identifiable element categories and the rule has no further condition."
+    },
+    {
+      "rule_id": "NFPA13-2022-SPRINKLER-SPACING-1829",
+      "standard": "NFPA 13 (Standard for the Installation of Sprinkler Systems)",
+      "edition": "2022",
+      "system_a": "fire_sprinkler",
+      "system_b": "fire_sprinkler",
+      "min_gap_mm": 1829,
+      "axis": "any",
+      "precedence": "code",
+      "source": {
+        "doc": "NFPA 13 2022",
+        "clause": "minimum spacing between sprinklers, to prevent cold soldering",
+        "text_hash": "unverified-nfpa13-spacing"
+      },
+      "quote": "Sprinklers shall be spaced not less than 1.8 m (6 ft) on center unless separated by a baffle.",
+      "verified": false,
+      "confidence": "high on the 6 ft / 1829 mm figure and on the cold-soldering rationale; LOW on the clause number. The baffle exception is NOT modelled by this rule.",
+      "scope_inferable": true,
+      "scope_note": "Sprinkler against sprinkler is directly expressible. The baffle exception is not modelled, so this can over-report where baffles exist."
+    }
+  ]
+}

@@ -29,3 +29,4 @@ artifacts/mep-judge/streams/
 
 .env
 .DS_Store
+.mutation_in_flight

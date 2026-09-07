@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from app.kit.engine import translated
 from app.monitors.base import FAIL, PASS, UNPROVABLE, Check, Monitor, MonitorContext, MonitorResult
-from app.monitors.geometry import compare, judge_against
+from app.monitors.geometry import compare, in_range, judge_against, reach_m
 
 
 class BoundaryMonitor(Monitor):
@@ -83,6 +83,7 @@ class BoundaryMonitor(Monitor):
                 {"commits": {k: h.commit_count for k, h in heads.items()}},
             )
 
+        neighbours = in_range(element, neighbours, reach_m(ctx))
         before = judge_against(element, neighbours, ctx.rules)
         moved = translated(element, ctx.vector_mm)
         after = judge_against(moved, neighbours, ctx.rules)

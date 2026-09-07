@@ -26,10 +26,51 @@ ACTIVE_KINDS = (geometry_engine.KIND_CLASH, geometry_engine.KIND_CLEARANCE)
 WORSENING_TOLERANCE_MM = 1.0
 
 
+def reach_m(ctx) -> float:
+    """How far from its current position this move could matter, in metres.
+
+    The widest clearance any loaded rule can demand, plus the length of the move
+    itself. Anything further away cannot be reached by this displacement and
+    cannot be governed by any rule once it is reached.
+    """
+    widest = max((r.min_gap_mm for r in ctx.rules), default=0.0) / 1000.0
+    travel = sum(v * v for v in ctx.vector_mm) ** 0.5 / 1000.0
+    return widest + travel
+
+
 def _rule_for(rules, a, b):
     from app.blocks.clearance_rules import find_applicable_rule
 
     return find_applicable_rule(rules, getattr(a, "system", None), getattr(b, "system", None), "any")
+
+
+def in_range(subject, others, pad_m: float) -> list:
+    """The elements a move could plausibly interact with.
+
+    An exact boolean against an element forty metres away costs the same as one
+    against a touching pair and can only ever answer "clear". The full pass has
+    always pre-filtered on padded boxes; the monitors did not, and once the rule
+    table grew enough to produce seventy-five clashes on a real model that turned
+    a run into a quarter of a million boolean operations.
+
+    The subset is chosen ONCE from the element's original position, with the pad
+    widened by the move itself, so the before and after judgements compare the
+    same set. Choosing it separately for each would let a move drag a new element
+    into the "after" set and out of the "before" set, and the comparison would
+    report an introduced finding that was really a filtering artefact.
+    """
+    from app.blocks import geometry_engine as engine
+
+    if not subject.bbox:
+        return list(others)
+    kept = []
+    for other in others:
+        if other is None or not other.bbox:
+            kept.append(other)
+            continue
+        if engine.aabb_overlaps(subject.bbox, other.bbox, pad=pad_m):
+            kept.append(other)
+    return kept
 
 
 def judge_against(subject, others, rules) -> dict[str, object]:
@@ -122,6 +163,7 @@ class GeometryMonitor(Monitor):
         scope_gids = [g for g in set(ctx.zone_gids) | set(ctx.buffer_gids) if g != ctx.element_gid]
         others = [ctx.model.element(g) for g in scope_gids]
         others = [o for o in others if o is not None]
+        others = in_range(element, others, reach_m(ctx))
 
         before = ctx.baseline.get("geometry")
         if before is None:

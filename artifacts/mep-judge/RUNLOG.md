@@ -275,3 +275,74 @@ number, and the number was about something else.
 | OpenAPI schema diff | ✅ unchanged |
 | docker build | ✅ |
 | container `/health` == `GITHUB_SHA` | ✅ |
+
+---
+
+## F15 — most published clearance rules cannot be applied from IFC alone
+**Found:** building the public rules table (H2), when the round-trip test stopped
+producing a single acceptable proposal.
+
+Nine separation rules were transcribed from public standards and wired in. The
+suite immediately went red: every proposal on the small fixtures escalated. The
+cause was not the resolver.
+
+ASHRAE 62.1's 3 m figure governs an **outdoor air intake** against a **plumbing
+vent terminal**. Encoded against the nearest available system categories it
+becomes `ventilation ↔ drainage_foul` — three metres between every duct and every
+drain in the building. On a fixture where a duct sits 150 mm from a drain,
+nothing can satisfy it, so everything escalates.
+
+It is not an isolated case. Checked one by one:
+
+| rule | what it actually governs | why IFC cannot say |
+|---|---|---|
+| NEC 110.26(A) | working space at equipment *likely to require examination while energized* | the model does not mark which electrical elements those are |
+| NEC 300.4(A)(1) | cables through bored holes in **wood** framing | neither the material condition nor the bored hole is in the model |
+| NFPA 13 deflector | clearance to the top of **storage** | a model has no storage |
+| SMACNA 457 mm | clear space at duct **access doors** | access doors are not identified |
+| ASHRAE 62.1 | **outdoor intake** to **plumbing vent** | neither sub-type is inferable |
+
+Seven of nine are withheld. Two survive — sprinkler-to-wall and
+sprinkler-to-sprinkler — because both sides are element categories and the rule
+carries no further condition.
+
+**Handled:** `scope_inferable` per rule, `withheld_for_scope()` reporting each
+withholding by name with its reason, and `rules_withheld_for_scope` in
+`model_version.stats`. A mutation probe fails if the gate stops withholding.
+
+**Why withhold rather than over-apply.** An over-broad rule produces findings
+that look authoritative and are not — the same noise the kit was built to remove,
+now wearing a citation, which makes it *harder* to argue with rather than easier.
+A coordination engineer who is handed three hundred false clearance violations
+carrying NFPA numbers stops reading the report, and is right to.
+
+**Consequence for the target.** A06 asked for `clearance_findings ≥ 1` on
+Schependomlaan from the public rules. That model has no sprinklers, so the two
+applicable rules cannot fire, and every rule that *would* fire on it only fires
+because its scope condition was discarded. The check was rewritten to assert what
+is true and useful instead: the bilingual alias table reclassifies 13 elements
+the English hint list cannot reach, and the withheld rules are each named with a
+reason. **This service still finds hard clashes on that model and nothing else,
+and it now explains precisely why in terms of the standards themselves.**
+
+The unlock is not more rules. It is either a project specification with
+project-specific separations, or IFC property sets rich enough to establish
+scope — an `IfcDistributionControlElement` marked as a panel, an access door
+identified, storage zones modelled.
+
+## F16 — a killed mutation run left a sabotaged monitor on disk
+**Found:** a probe run reporting `boundary_monitor_ignores_the_neighbour (anchor
+missing -- probe is stale)`.
+
+The anchor was not stale. An earlier probe run had been killed by a timeout
+between applying its mutation and the `finally` that restores the file, so
+`app/monitors/boundary.py` was sitting on disk with its comparison stubbed out to
+`[], []` — the BoundaryMonitor was live and blind. The next run then reported it
+as a *stale probe*, which is the mildest possible description of the situation.
+
+Two commits nearly went out with a deliberately sabotaged safety monitor.
+
+**Handled:** a `.mutation_in_flight` marker holding the original source is
+written before each mutation and removed after restoring. On startup the harness
+restores from any marker it finds, says what it repaired, and refuses to report a
+result until re-run. A killed run is now loud instead of invisible.

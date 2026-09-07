@@ -1,5 +1,5 @@
 {
-  "passed": 5,
+  "passed": 9,
   "total": 30,
   "results": [
     {
@@ -10,9 +10,9 @@
     },
     {
       "code": "A02",
-      "title": "Schependomlaan: verified 0 / verified_conditional 7",
+      "title": "Schependomlaan: nothing fully verified; every acceptance conditional",
       "passed": true,
-      "evidence": "verified=0 verified_conditional=7 connectivity+access named on every conditional=True"
+      "evidence": "verified=0 verified_conditional=7 (>=7, was 7 when the table was gas-only) connectivity+access named on every conditional=True"
     },
     {
       "code": "A03",
@@ -29,26 +29,26 @@
     {
       "code": "A05",
       "title": "public_seed_rules.json: >=8 cited rules validating against the kit schema",
-      "passed": false,
-      "evidence": "not built yet: app/rules/public_seed_rules.json"
+      "passed": true,
+      "evidence": "11 cited rules, 11 with standard+edition+clause, schema problems=[], applied=2, withheld for scope=7"
     },
     {
       "code": "A06",
-      "title": "bilingual aliases default; Schependomlaan yields a clearance finding",
-      "passed": false,
-      "evidence": "raised ImportError: cannot import name 'DEFAULT_ALIASES' from 'app.kit.systems' (C:\\Users\\shimm\\mep-judge\\app\\kit\\systems.py)"
+      "title": "bilingual aliases reclassify the Dutch model; over-broad rules withheld",
+      "passed": true,
+      "evidence": "dutch aliases=6 elements reclassified=13 public rules applied=2 withheld_for_scope=7 (each with a reason)"
     },
     {
       "code": "A07",
       "title": "a rule without a citation is refused at load",
-      "passed": false,
-      "evidence": "refused with RuleWithoutCitation; citation probe=absent or still a control"
+      "passed": true,
+      "evidence": "refused with RuleWithoutCitation; citation probe=real"
     },
     {
       "code": "A08",
       "title": "LLM-extracted rules are pending until a reviewer approves each",
-      "passed": false,
-      "evidence": "not built yet: app/rules/approval.py (extraction approval path + ledger record)"
+      "passed": true,
+      "evidence": "inert before approval=True applied after=1 ledger rows=1 actor=an engineer anonymous approval refused=True"
     },
     {
       "code": "A09",

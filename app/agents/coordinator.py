@@ -56,21 +56,45 @@ from app.monitors import (
 
 log = logging.getLogger(__name__)
 
+
+def _unverified_ids() -> set[str]:
+    from app.rules import unverified_rule_ids
+
+    return unverified_rule_ids()
+
+
+def _withheld_for_scope() -> list[dict[str, str]]:
+    from app.rules import withheld_for_scope
+
+    return withheld_for_scope()
+
 # app.blocks mounts the vendored kit via __path__, so the seed table is resolved
 # through that mount rather than through a directory that does not exist on disk.
 KIT_SEED_RULES = VENDOR_DIR / "seed_rules.json"
 KIT_ORDER = VENDOR_DIR / "order.yaml"
 
 
-def load_project_rules(extra_path: str | Path | None = None) -> list[Any]:
-    """Kit seed rules plus any the project supplied.
+def load_project_rules(
+    extra_path: str | Path | None = None, include_public: bool = True
+) -> list[Any]:
+    """Kit seed rules, the public standards table, and anything the project supplied.
 
-    ``load_rules`` refuses a rule without a citation, so an unsourced entry in a
-    project file fails the load rather than entering the table. That is the
+    ``load_rules`` refuses a rule without a citation, so an unsourced entry in
+    any of the three fails the load rather than entering the table. That is the
     intended behaviour: a table that silently drops bad rules and keeps going is
     a table nobody can trust the contents of.
+
+    The public rules are **unverified transcriptions** of published standards --
+    see ``app/rules/__init__.py``. They are loaded because a citation exists to
+    be followed and an engineer cannot follow one that was never offered; every
+    finding they produce carries the rule id, and ``rule_verification`` on the
+    change set says which of them nobody has checked yet.
     """
     rules = list(clearance_rules.load_rules(str(KIT_SEED_RULES)))
+    if include_public:
+        from app.rules import load_public_rules
+
+        rules.extend(load_public_rules())
     if extra_path and Path(extra_path).exists():
         rules.extend(clearance_rules.load_rules(str(extra_path)))
     return rules
@@ -207,6 +231,8 @@ class Coordinator:
             "dropped_workflow": triaged.dropped_workflow,
             "deduped": triaged.deduped,
             "rules_loaded": len(rules),
+            "rules_unverified": sorted({r.rule_id for r in rules} & _unverified_ids()),
+            "rules_withheld_for_scope": _withheld_for_scope(),
             "system_aliases": alias_report,
             "rules_never_applied": never_applied,
         }

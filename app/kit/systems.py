@@ -27,6 +27,59 @@ from pathlib import Path
 from typing import Any
 
 ALIAS_SOURCE = "project_alias"
+DEFAULT_ALIAS_SOURCE = "default_alias"
+
+#: Shipped aliases, Dutch and English, ordered because the first match wins.
+#:
+#: The kit's hint list is English and abbreviation-free, which is not a criticism
+#: of it -- it is a list that has to stop somewhere. But the only real building
+#: model available here is Dutch, and thirteen of its seventy-three MEP elements
+#: are named "vent. rooster": a ventilation grille. "ventilat" does not match the
+#: abbreviation and "rooster" is not an English word, so those thirteen classify
+#: as `unknown`, no rule can reach them, and the model reports less than it holds.
+#:
+#: Order is load-bearing. "hwa afvoer" is rainwater drainage and contains
+#: "afvoer", which on its own means foul drainage -- so every storm pattern is
+#: listed before every foul one. Getting that backwards would silently reclassify
+#: sixty rainwater pipes as foul and change which rules govern them.
+DEFAULT_ALIASES: tuple[dict[str, str], ...] = (
+    # -- storm drainage first, so "hwa afvoer" does not match "afvoer" --
+    {"lang": "nl", "pattern": r"\bhwa\b|hemelwater|regenwater|\brwa\b",
+     "system": "drainage_storm", "note": "hemelwaterafvoer: rainwater drainage"},
+    {"lang": "en", "pattern": r"rainwater|stormwater|\bstorm\b",
+     "system": "drainage_storm", "note": ""},
+    # -- foul drainage --
+    {"lang": "nl", "pattern": r"vuilwater|sanitair|\bdwa\b|riool",
+     "system": "drainage_foul", "note": "vuilwaterafvoer: foul drainage"},
+    {"lang": "en", "pattern": r"\bfoul\b|\bsoil\b|\bwaste\b|sewer",
+     "system": "drainage_foul", "note": ""},
+    # -- ventilation. "vent." is the abbreviation the fixture actually uses. --
+    {"lang": "nl", "pattern": r"\bvent\.|ventilatie|luchtbehandeling|\blucht\b|rooster",
+     "system": "ventilation", "note": "rooster: grille; vent. rooster: ventilation grille"},
+    {"lang": "en", "pattern": r"\bduct\b|air handling|\bahu\b|grille|louvre|louver|diffuser",
+     "system": "ventilation", "note": ""},
+    # -- electrical --
+    {"lang": "nl", "pattern": r"elektra|kabelgoot|laagspanning|\bls\b",
+     "system": "electrical_lv", "note": "kabelgoot: cable tray; laagspanning: low voltage"},
+    {"lang": "en", "pattern": r"cable tray|cable basket|\blv\b|low voltage|busbar",
+     "system": "electrical_lv", "note": ""},
+    # -- fire --
+    {"lang": "nl", "pattern": r"sprinkler|brandblus|blusleiding",
+     "system": "fire_sprinkler", "note": "blusleiding: fire main"},
+    {"lang": "en", "pattern": r"sprinkler|fire main|standpipe",
+     "system": "fire_sprinkler", "note": ""},
+    # -- condensate --
+    {"lang": "nl", "pattern": r"condens", "system": "condensate", "note": ""},
+    {"lang": "en", "pattern": r"condensate", "system": "condensate", "note": ""},
+)
+
+
+def default_aliases() -> list[SystemAlias]:
+    """The shipped table, compiled. Projects prepend their own to override."""
+    return [
+        SystemAlias(re.compile(a["pattern"], re.IGNORECASE), a["system"], a["note"])
+        for a in DEFAULT_ALIASES
+    ]
 
 
 @dataclass(frozen=True)
@@ -58,10 +111,10 @@ def load_system_aliases(path: str | Path | None) -> list[SystemAlias]:
     module exists to remove.
     """
     if path is None:
-        return []
+        return default_aliases()
     p = Path(path)
     if not p.exists():
-        return []
+        return default_aliases()
     try:
         payload = json.loads(p.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
@@ -80,7 +133,9 @@ def load_system_aliases(path: str | Path | None) -> list[SystemAlias]:
         except re.error as exc:
             raise InvalidAliasTable(f"{p}: alias {i} pattern is not a regex: {exc}") from exc
         out.append(SystemAlias(compiled, str(entry["system"]), str(entry.get("note", ""))))
-    return out
+    # A project table extends the shipped one rather than replacing it: a project
+    # that names one system should not silently lose the other eleven.
+    return out + default_aliases()
 
 
 def apply_system_aliases(elements: list[Any], aliases: list[SystemAlias]) -> dict[str, Any]:

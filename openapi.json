@@ -229,6 +229,17 @@
             "title": "Exact Geometry Backend",
             "type": "boolean"
           },
+          "provable_check_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provable Check Ratio"
+          },
           "status": {
             "title": "Status",
             "type": "string"
@@ -242,6 +253,11 @@
             "additionalProperties": true,
             "title": "Vendored Kit",
             "type": "object"
+          },
+          "verification": {
+            "additionalProperties": true,
+            "title": "Verification",
+            "type": "object"
           }
         },
         "required": [
@@ -250,7 +266,8 @@
           "database",
           "store",
           "exact_geometry_backend",
-          "vendored_kit"
+          "vendored_kit",
+          "verification"
         ],
         "title": "HealthOut",
         "type": "object"
@@ -275,6 +292,27 @@
           "pairs_admitted": {
             "title": "Pairs Admitted",
             "type": "integer"
+          },
+          "proposals_conditional": {
+            "default": 0,
+            "title": "Proposals Conditional",
+            "type": "integer"
+          },
+          "proposals_verified": {
+            "default": 0,
+            "title": "Proposals Verified",
+            "type": "integer"
+          },
+          "provable_check_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provable Check Ratio"
           },
           "zones_created": {
             "title": "Zones Created",
@@ -503,6 +541,13 @@
             "title": "Rule Ids",
             "type": "array"
           },
+          "unprovable_checks": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Unprovable Checks",
+            "type": "array"
+          },
           "verdict": {
             "title": "Verdict",
             "type": "string"
@@ -552,6 +597,13 @@
       },
       "ReviewIn": {
         "properties": {
+          "acknowledge_unprovable": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Acknowledge Unprovable",
+            "type": "array"
+          },
           "decision": {
             "enum": [
               "approve",
@@ -595,6 +647,23 @@
       },
       "ReviewOut": {
         "properties": {
+          "acknowledged": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Acknowledged",
+            "type": "array"
+          },
+          "approved_conditionally": {
+            "default": 0,
+            "title": "Approved Conditionally",
+            "type": "integer"
+          },
+          "approved_fully": {
+            "default": 0,
+            "title": "Approved Fully",
+            "type": "integer"
+          },
           "change_set_ref": {
             "anyOf": [
               {

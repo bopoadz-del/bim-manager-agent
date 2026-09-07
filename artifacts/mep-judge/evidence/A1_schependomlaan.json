@@ -33,6 +33,18 @@
       "systems": "gas_main <-> building",
       "absent_from_model": "gas_main, building",
       "consequence": "this rule was never applied to any pair"
+    },
+    {
+      "rule_id": "NFPA13-2022-SPRINKLER-TO-WALL-102",
+      "systems": "fire_sprinkler <-> structure",
+      "absent_from_model": "fire_sprinkler",
+      "consequence": "this rule was never applied to any pair"
+    },
+    {
+      "rule_id": "NFPA13-2022-SPRINKLER-SPACING-1829",
+      "systems": "fire_sprinkler <-> fire_sprinkler",
+      "absent_from_model": "fire_sprinkler, fire_sprinkler",
+      "consequence": "this rule was never applied to any pair"
     }
   ],
   "top_zone_priorities": [
