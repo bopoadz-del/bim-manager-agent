@@ -10,11 +10,16 @@ from app.monitors.base import (
     FAIL,
     PASS,
     UNPROVABLE,
+    VERDICT_CONDITIONAL,
+    VERDICT_FAIL,
+    VERDICT_PASS,
     Check,
     Monitor,
     MonitorContext,
     MonitorResult,
+    aggregate,
     run_all,
+    unprovable_across,
 )
 from app.monitors.boundary import BoundaryMonitor
 from app.monitors.geometry import GeometryMonitor
@@ -24,6 +29,11 @@ ALL_MONITORS: list[Monitor] = [GeometryMonitor(), BoundaryMonitor(), IntegrityMo
 
 __all__ = [
     "ALL_MONITORS",
+    "VERDICT_CONDITIONAL",
+    "VERDICT_FAIL",
+    "VERDICT_PASS",
+    "aggregate",
+    "unprovable_across",
     "BoundaryMonitor",
     "Check",
     "FAIL",

@@ -58,19 +58,31 @@ def test_A1_schependomlaan_through_the_full_pipeline(db, project, settings, stor
     reviewed = [z for z in zones if z.status == "awaiting_review"]
     assert reviewed, "no zone reached awaiting_review"
 
-    verified = (
+    proposals = (
         db.query(Proposal)
         .join(Clash, Clash.id == Proposal.clash_id)
-        .filter(Clash.model_version_id == mv.id, Proposal.verdict == "verified")
+        .filter(Clash.model_version_id == mv.id, Proposal.superseded == 0)
         .all()
     )
-    assert verified, "no proposal was verified by all three monitors"
+    fully = [p for p in proposals if p.verdict == "verified"]
+    conditional = [p for p in proposals if p.verdict == "verified_conditional"]
+    assert conditional, "no proposal was accepted by all three monitors"
 
-    for proposal in verified:
+    # A02. This model carries no IfcDistributionPort and the project supplied no
+    # access table, so integrity cannot answer two of its checks on any element.
+    # Every acceptance here is therefore conditional, and none may be reported as
+    # a full verification.
+    assert not fully, (
+        f"{len(fully)} proposals claim full verification on a model that cannot "
+        f"answer connectivity or access for any element"
+    )
+    for proposal in conditional:
         for field in ("monitor_geometry", "monitor_boundary", "monitor_integrity"):
             evidence = getattr(proposal, field)
-            assert evidence is not None, f"verified proposal has no {field}"
-            assert evidence["passed"] is True, f"verified proposal has a failing {field}"
+            assert evidence is not None, f"accepted proposal has no {field}"
+            assert evidence["verdict"] != "fail", f"accepted proposal has a failing {field}"
+        assert "integrity.still_connected" in proposal.unprovable_checks
+        assert "integrity.access_preserved" in proposal.unprovable_checks
 
     _evidence(
         settings,
@@ -84,7 +96,12 @@ def test_A1_schependomlaan_through_the_full_pipeline(db, project, settings, stor
             "joints_excluded": result.joints_excluded,
             "pairs_admitted": result.pairs_admitted,
             "pairs_possible": result.stats["pairs_possible"],
-            "verified_proposals": len(verified),
+            "proposals_verified": len(fully),
+            "proposals_conditional": len(conditional),
+            "provable_check_ratio": result.provable_check_ratio,
+            "unprovable_checks": sorted(
+                {c for p in conditional for c in (p.unprovable_checks or [])}
+            ),
             "boundary_owned": result.boundary_owned,
             "rules_never_applied": result.stats["rules_never_applied"],
             "top_zone_priorities": [
@@ -455,9 +472,11 @@ def test_A5_a_neighbour_commit_sends_a_verified_proposal_back_to_proposed(
     assert len(zones) >= 2, f"expected two zones so a boundary exists, got {list(zones)}"
 
     verified = [
-        c for c in db.query(Clash).filter(Clash.model_version_id == mv.id) if c.state == "verified"
+        c
+        for c in db.query(Clash).filter(Clash.model_version_id == mv.id)
+        if c.state in ("verified", "verified_conditional")
     ]
-    assert verified, "zone B verified nothing, so there is nothing for a rebase to invalidate"
+    assert verified, "zone B accepted nothing, so there is nothing for a rebase to invalidate"
     target = verified[0]
     zone_b = zones[next(k for k, z in zones.items() if z.id == target.zone_id)]
 
@@ -471,13 +490,14 @@ def test_A5_a_neighbour_commit_sends_a_verified_proposal_back_to_proposed(
     assert zone_a_key != zone_b.zone_key, "the trap put both elements in one zone"
 
     before = [e.to_state for e in history(db, "clash", target.id)]
-    assert before[-1] == "verified"
+    assert before[-1] in ("verified", "verified_conditional")
 
     # Aim zone A's commit at the position B actually claimed, whichever
     # direction B chose. Predicting the direction would make the test a
     # restatement of the resolver's search order rather than a test of the rebase.
     proposal = coordinator._latest_proposal(target.id)
-    assert proposal is not None and proposal.verdict == "verified"
+    assert proposal is not None
+    assert proposal.verdict in ("verified", "verified_conditional")
     moved_gid = proposal.element_gid
     moved_element = model.element(moved_gid)
     vector = tuple(float(v) for v in proposal.move_vector)
@@ -520,7 +540,8 @@ def test_A5_a_neighbour_commit_sends_a_verified_proposal_back_to_proposed(
 
     after = history(db, "clash", target.id)
     last = after[-1]
-    assert last.from_state == "verified" and last.to_state == "proposed"
+    assert last.from_state in ("verified", "verified_conditional")
+    assert last.to_state == "proposed"
     assert last.payload["rebase"] is True
     assert last.payload["objections"], "the rebase recorded no reason"
 

@@ -26,7 +26,7 @@ from app.agents.results import IngestResult
 from app.api.events import BUS
 from app.config import Settings, get_settings
 from app.kit.engine import load_model
-from app.models import Clash, ModelVersion, Zone
+from app.models import Clash, ModelVersion, Proposal, Zone
 
 log = logging.getLogger(__name__)
 
@@ -125,6 +125,54 @@ def run_pipeline(
         db.flush()
         _emit(topic, "review.ready", zone_id=zone.id, zone_key=zone.zone_key, **package)
 
+    _tally_verdicts(db, model_version, ingest)
     model_version.status = "reviewed"
-    _emit(topic, "run.complete", model_version_id=model_version.id)
+    _emit(
+        topic,
+        "run.complete",
+        model_version_id=model_version.id,
+        verified=ingest.proposals_verified,
+        verified_conditional=ingest.proposals_conditional,
+        provable_check_ratio=ingest.provable_check_ratio,
+    )
     return ingest
+
+
+def _tally_verdicts(db: Session, model_version: ModelVersion, ingest: IngestResult) -> None:
+    """Count what was verified outright against what was merely not objected to.
+
+    Reported separately and never summed. A single "resolved" number would put
+    back exactly the conflation the conditional verdict removes, one level up
+    from where it was removed.
+    """
+    proposals = list(
+        db.execute(
+            select(Proposal)
+            .join(Clash, Clash.id == Proposal.clash_id)
+            .where(Clash.model_version_id == model_version.id, Proposal.superseded == 0)
+        ).scalars()
+    )
+    ingest.proposals_verified = sum(1 for p in proposals if p.verdict == "verified")
+    ingest.proposals_conditional = sum(
+        1 for p in proposals if p.verdict == "verified_conditional"
+    )
+
+    checked = unprovable = 0
+    for proposal in proposals:
+        for field_name in ("monitor_geometry", "monitor_boundary", "monitor_integrity"):
+            payload = getattr(proposal, field_name) or {}
+            checks = payload.get("checks") or []
+            checked += len(checks)
+            unprovable += sum(1 for c in checks if c.get("status") == "unprovable")
+    ingest.provable_check_ratio = (
+        round((checked - unprovable) / checked, 4) if checked else None
+    )
+    stats = dict(model_version.stats or {})
+    stats["verdicts"] = {
+        "proposals_verified": ingest.proposals_verified,
+        "proposals_conditional": ingest.proposals_conditional,
+        "provable_check_ratio": ingest.provable_check_ratio,
+        "checks_run": checked,
+        "checks_unprovable": unprovable,
+    }
+    model_version.stats = stats

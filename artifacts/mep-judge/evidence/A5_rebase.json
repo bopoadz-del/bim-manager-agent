@@ -4,7 +4,7 @@
   "clash": "0RaRsgPsfT2fp3DUUF6PpS::34H8GuPcXT1Bru9J60hmey",
   "state_path": [
     "open",
-    "verified",
+    "verified_conditional",
     "proposed"
   ],
   "rebased_zones": [

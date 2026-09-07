@@ -54,6 +54,10 @@ CLASH_STATES = (
     "open",
     "proposed",
     "verified",
+    # Accepted by every monitor, with at least one check this model could not
+    # answer. Kept distinct from "verified" all the way down to the check
+    # constraint, so no code path can quietly merge the two.
+    "verified_conditional",
     "approved",
     "merged",
     "resolved",
@@ -65,6 +69,7 @@ REVIEW_DECISIONS = ("approve", "reject", "edit")
 PROPOSAL_VERDICTS = (
     "pending",
     "verified",
+    "verified_conditional",
     "rejected",
     "flagged_unsourced",
     "escalated",
@@ -171,7 +176,7 @@ class Clash(Base):
     kind: Mapped[str] = mapped_column(String(20), nullable=False)
     depth_or_gap_mm: Mapped[float | None] = mapped_column(Float)
     systems: Mapped[list] = mapped_column(JSON, default=list)
-    state: Mapped[str] = mapped_column(String(20), default="open", index=True)
+    state: Mapped[str] = mapped_column(String(30), default="open", index=True)
     attempts: Mapped[int] = mapped_column(Integer, default=0)
     owner: Mapped[str] = mapped_column(String(20), default="zone")
     rule_id: Mapped[str | None] = mapped_column(String(80))
@@ -188,8 +193,8 @@ class Clash(Base):
     __table_args__ = (
         UniqueConstraint("model_version_id", "clash_key", name="uq_clash_key_per_version"),
         CheckConstraint(
-            "state in ('open', 'proposed', 'verified', 'approved', 'merged', "
-            "'resolved', 'regressed', 'escalated')",
+            "state in ('open', 'proposed', 'verified', 'verified_conditional', "
+            "'approved', 'merged', 'resolved', 'regressed', 'escalated')",
             name="ck_clash_state",
         ),
         CheckConstraint("owner in ('zone', 'coordinator')", name="ck_clash_owner"),
@@ -210,7 +215,11 @@ class Proposal(Base):
     monitor_geometry: Mapped[dict | None] = mapped_column(JSON)
     monitor_boundary: Mapped[dict | None] = mapped_column(JSON)
     monitor_integrity: Mapped[dict | None] = mapped_column(JSON)
-    verdict: Mapped[str] = mapped_column(String(20), default="pending", index=True)
+    #: Checks no monitor could answer, as "monitor.check". Empty for a full
+    #: verification. A reviewer approving a conditional proposal must
+    #: acknowledge exactly this list.
+    unprovable_checks: Mapped[list] = mapped_column(JSON, default=list)
+    verdict: Mapped[str] = mapped_column(String(30), default="pending", index=True)
     attempt: Mapped[int] = mapped_column(Integer, default=1)
     superseded: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
@@ -219,8 +228,8 @@ class Proposal(Base):
 
     __table_args__ = (
         CheckConstraint(
-            "verdict in ('pending', 'verified', 'rejected', 'flagged_unsourced', "
-            "'escalated', 'approved', 'superseded')",
+            "verdict in ('pending', 'verified', 'verified_conditional', 'rejected', "
+            "'flagged_unsourced', 'escalated', 'approved', 'superseded')",
             name="ck_proposal_verdict",
         ),
     )

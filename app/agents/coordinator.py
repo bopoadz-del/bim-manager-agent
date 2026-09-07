@@ -20,6 +20,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app import review_package
 from app.agents.results import ArbitrationResult, DiffResult, IngestResult, ZoneResult
 from app.agents.zone_resolver import ZoneResolver, as_vector3
 from app.agents.zoning import ZonePlan, buffer_gids, neighbours_of, plan_zones
@@ -44,7 +45,14 @@ from app.models import (
     Proposal,
     Zone,
 )
-from app.monitors import ALL_MONITORS, MonitorContext, run_all
+from app.monitors import (
+    ALL_MONITORS,
+    VERDICT_FAIL,
+    VERDICT_PASS,
+    MonitorContext,
+    run_all,
+    unprovable_across,
+)
 
 log = logging.getLogger(__name__)
 
@@ -460,9 +468,11 @@ class Coordinator:
             allowed=ZONE_STATES,
             payload={
                 "verified": result.verified,
+                "verified_conditional": result.verified_conditional,
                 "escalated": result.escalated,
                 "handed_to_coordinator": result.handed_to_coordinator,
                 "resolve_rate": result.resolve_rate,
+                "fully_verified_rate": result.fully_verified_rate,
             },
         )
         self.session.flush()
@@ -491,6 +501,7 @@ class Coordinator:
                     verdict="rejected",
                     attempt=rejected["attempt"],
                     superseded=1,
+                    unprovable_checks=[],
                 )
             )
 
@@ -506,6 +517,7 @@ class Coordinator:
             monitor_integrity=outcome.monitors.get("integrity"),
             verdict=outcome.verdict,
             attempt=outcome.attempt,
+            unprovable_checks=list(outcome.unprovable_checks),
         )
         self.session.add(proposal)
         clash.attempts = max(clash.attempts, outcome.attempt)
@@ -514,6 +526,8 @@ class Coordinator:
             target = "proposed"
         elif outcome.verdict == "verified":
             target = "verified"
+        elif outcome.verdict == "verified_conditional":
+            target = "verified_conditional"
         elif outcome.verdict == "flagged_unsourced":
             target = "escalated"
         else:
@@ -527,6 +541,7 @@ class Coordinator:
             allowed=CLASH_STATES,
             payload={
                 "verdict": outcome.verdict,
+                "unprovable_checks": list(outcome.unprovable_checks),
                 "attempt": outcome.attempt,
                 "vector_mm": list(outcome.vector_mm),
                 "committed_as": outcome.committed_as,
@@ -595,7 +610,8 @@ class Coordinator:
             )
         vector = as_vector3(proposal.move_vector)
         monitors_payload: dict[str, dict] = {}
-        all_passed = True
+        zone_verdicts: dict[str, str] = {}
+        unprovable: set[str] = set()
 
         for plan in owning:
             buf = buffer_gids(plan, model.by_id, self.settings.zone_buffer_m)
@@ -611,19 +627,24 @@ class Coordinator:
                 store=self.store,
                 stream=mv.speckle_stream if mv else None,
             )
-            passed, results = run_all(self.monitors, ctx)
-            all_passed = all_passed and passed
+            zone_verdict, results = run_all(self.monitors, ctx)
+            zone_verdicts[plan.zone_key] = zone_verdict
+            # Bare "monitor.check", the same shape the resolver records. The
+            # per-zone detail goes in the ledger payload instead: a reviewer
+            # acknowledges a check, and an acknowledgement that had to name the
+            # zone it was raised in could never match one that did not.
+            unprovable.update(unprovable_across(results))
             monitors_payload[plan.zone_key] = {
                 name: r.as_dict() for name, r in results.items()
             }
 
         zones_checked = [p.zone_key for p in owning]
-        if not all_passed:
+        if any(v == VERDICT_FAIL for v in zone_verdicts.values()):
             objections = [
                 f"{zk}/{name}: {res['reason']}"
                 for zk, per_zone in monitors_payload.items()
                 for name, res in per_zone.items()
-                if not res["passed"]
+                if res["verdict"] == VERDICT_FAIL
             ]
             proposal.verdict = "rejected"
             transition(
@@ -649,15 +670,27 @@ class Coordinator:
             message=f"arbitrated {clash.clash_key}",
             meta={"arbitrated_across": zones_checked},
         )
-        proposal.verdict = "verified"
+        # Both zones accepted. Whether that is a verification or a conditional
+        # one depends on whether either zone had a check it could not answer --
+        # arbitration must not launder a conditional into a full pass just
+        # because two zones agreed on it.
+        fully = all(v == VERDICT_PASS for v in zone_verdicts.values())
+        proposal.verdict = "verified" if fully else "verified_conditional"
+        proposal.unprovable_checks = sorted(unprovable)
         transition(
             self.session,
             clash,
             entity="clash",
-            to_state="verified",
+            to_state="verified" if fully else "verified_conditional",
             allowed=CLASH_STATES,
             actor="coordinator",
-            payload={"arbitration": "committed", "commit": commit_id, "zones": zones_checked},
+            payload={
+                "arbitration": "committed",
+                "commit": commit_id,
+                "zones": zones_checked,
+                "zone_verdicts": zone_verdicts,
+                "unprovable_checks": sorted(unprovable),
+            },
         )
 
         rebased = self.enqueue_rebase(
@@ -749,7 +782,14 @@ class Coordinator:
 
             verified = list(
                 self.session.execute(
-                    select(Clash).where(Clash.zone_id == zone.id, Clash.state == "verified")
+                    select(Clash).where(
+                        Clash.zone_id == zone.id,
+                        # Conditional acceptances are rebased too. They were
+                        # judged against a neighbourhood that has since moved,
+                        # exactly like a full verification, and exempting them
+                        # would make the weaker verdict the safer one to hold.
+                        Clash.state.in_(("verified", "verified_conditional")),
+                    )
                 ).scalars()
             )
             if not verified:
@@ -775,8 +815,10 @@ class Coordinator:
                     store=self.store,
                     stream=mv.speckle_stream if mv else None,
                 )
-                passed, results = run_all(self.monitors, ctx)
-                if passed:
+                rebase_verdict, results = run_all(self.monitors, ctx)
+                if rebase_verdict != VERDICT_FAIL:
+                    # Still acceptable. A conditional stays conditional; it was
+                    # never claiming more than that.
                     continue
                 invalidated += 1
                 proposal.monitor_geometry = results["geometry"].as_dict()
@@ -794,7 +836,7 @@ class Coordinator:
                         "rebase": True,
                         "trigger": {"zones": changed_zones, "element": element_gid},
                         "objections": [
-                            f"{n}: {r.reason}" for n, r in results.items() if not r.passed
+                            f"{n}: {r.reason}" for n, r in results.items() if r.failed
                         ],
                     },
                 )
@@ -844,6 +886,25 @@ class Coordinator:
         ]
         change_set = model_clone.write_change_set(kit_proposals, out / "change_set.json")
 
+        # The kit does not know about conditional verification -- that concept
+        # belongs to the monitors, which are this service's. Enrich its output
+        # rather than editing it: a change set that leaves here without the
+        # distinction tells every downstream reader something stronger than what
+        # was measured.
+        verification_by_clash = {}
+        verification_by_pair = {}
+        for clash in clashes:
+            latest = self._latest_proposal(clash.id)
+            if latest is None:
+                continue
+            info = {
+                "verification": review_package.verification_of(latest),
+                "unprovable_checks": list(latest.unprovable_checks or []),
+            }
+            verification_by_clash[clash.clash_key] = info
+            verification_by_pair[frozenset((clash.a_gid, clash.b_gid))] = info
+        review_package.enrich_change_set(change_set, verification_by_clash)
+
         findings = self._findings_for_zone(zone, model)
         bcf_path = out / "issues.bcfzip"
         rule_lookup = {
@@ -854,6 +915,7 @@ class Coordinator:
         bcf_export.export_bcf(
             findings, bcf_path, model_name=Path(model.path).name, rule_lookup=rule_lookup
         )
+        review_package.annotate_bcf(bcf_path, verification_by_pair)
 
         evidence = {
             "zone_key": zone.zone_key,
@@ -864,6 +926,8 @@ class Coordinator:
                     "clash_key": c.clash_key,
                     "state": c.state,
                     "verdict": p.verdict if p else None,
+                    "verification": review_package.verification_of(p) if p else None,
+                    "unprovable_checks": list(p.unprovable_checks or []) if p else [],
                     "vector_mm": list(p.move_vector) if p else None,
                     "clause": p.clause_text if p else None,
                     "geometry": p.monitor_geometry if p else None,

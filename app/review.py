@@ -20,7 +20,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.api.errors import BadRequest, NotFound
+from app.api.errors import AcknowledgementRequired, BadRequest, NotFound
 from app.api.schemas import ReviewIn, ReviewOut
 from app.config import get_settings
 from app.ledger import record, transition
@@ -39,7 +39,7 @@ def _re_monitor(db: Session, zone: Zone, edits: list[Any]) -> list[dict[str, Any
     from app.agents.zone_resolver import as_vector3
     from app.agents.zoning import buffer_gids, neighbours_of
     from app.kit.engine import load_model
-    from app.monitors import MonitorContext, run_all
+    from app.monitors import VERDICT_FAIL, VERDICT_PASS, MonitorContext, run_all, unprovable_across
 
     coordinator = Coordinator(db)
     mv = db.get(ModelVersion, zone.model_version_id)
@@ -81,7 +81,8 @@ def _re_monitor(db: Session, zone: Zone, edits: list[Any]) -> list[dict[str, Any
             store=coordinator.store,
             stream=mv.speckle_stream,
         )
-        passed, results = run_all(coordinator.monitors, ctx)
+        edit_verdict, results = run_all(coordinator.monitors, ctx)
+        unprovable = unprovable_across(results)
 
         proposal.superseded = 1
         edited = Proposal(
@@ -94,7 +95,14 @@ def _re_monitor(db: Session, zone: Zone, edits: list[Any]) -> list[dict[str, Any
             monitor_geometry=results["geometry"].as_dict(),
             monitor_boundary=results["boundary"].as_dict(),
             monitor_integrity=results["integrity"].as_dict(),
-            verdict="verified" if passed else "rejected",
+            verdict=(
+                "verified"
+                if edit_verdict == VERDICT_PASS
+                else "rejected"
+                if edit_verdict == VERDICT_FAIL
+                else "verified_conditional"
+            ),
+            unprovable_checks=unprovable,
             attempt=proposal.attempt + 1,
         )
         db.add(edited)
@@ -104,14 +112,17 @@ def _re_monitor(db: Session, zone: Zone, edits: list[Any]) -> list[dict[str, Any
             db,
             clash,
             entity="clash",
-            to_state="verified" if passed else "escalated",
+            to_state=(
+                "escalated" if edit_verdict == VERDICT_FAIL else edited.verdict
+            ),
             allowed=CLASH_STATES,
             actor="reviewer",
             payload={
                 "reviewer_edit": True,
                 "vector_mm": list(vector),
-                "passed": passed,
-                "objections": [f"{n}: {r.reason}" for n, r in results.items() if not r.passed],
+                "verdict": edit_verdict,
+                "unprovable_checks": unprovable,
+                "objections": [f"{n}: {r.reason}" for n, r in results.items() if r.failed],
             },
         )
         out.append(
@@ -119,16 +130,47 @@ def _re_monitor(db: Session, zone: Zone, edits: list[Any]) -> list[dict[str, Any
                 "proposal_id": edited.id,
                 "replaces": proposal.id,
                 "clash_key": clash.clash_key,
-                "passed": passed,
-                "objections": [f"{n}: {r.reason}" for n, r in results.items() if not r.passed],
+                "verdict": edit_verdict,
+                "passed": edit_verdict == VERDICT_PASS,
+                "unprovable_checks": unprovable,
+                "objections": [f"{n}: {r.reason}" for n, r in results.items() if r.failed],
             }
         )
     return out
 
 
+def unacknowledged(db: Session, zone: Zone, acknowledged: list[str]) -> list[str]:
+    """Unanswered checks on this zone's approvable proposals that were not named.
+
+    The reviewer has to list them individually. A blanket approval is exactly
+    the rubber stamp the conditional verdict exists to prevent, so an empty
+    acknowledgement against a conditional zone is refused, and so is a partial
+    one.
+    """
+    named = set(acknowledged)
+    outstanding: set[str] = set()
+    for clash in _zone_clashes(db, zone):
+        if clash.state != "verified_conditional":
+            continue
+        latest = (
+            db.execute(
+                select(Proposal)
+                .where(Proposal.clash_id == clash.id, Proposal.superseded == 0)
+                .order_by(Proposal.created_at.desc(), Proposal.attempt.desc())
+            )
+            .scalars()
+            .first()
+        )
+        if latest is None:
+            continue
+        outstanding.update(set(latest.unprovable_checks or []) - named)
+    return sorted(outstanding)
+
+
 def apply_review(db: Session, zone: Zone, body: ReviewIn, actor: str) -> ReviewOut:
     re_monitored: list[dict[str, Any]] = []
     change_set_ref: str | None = None
+    approved_fully = approved_conditionally = 0
 
     if body.decision == "edit":
         if not body.edits:
@@ -139,28 +181,54 @@ def apply_review(db: Session, zone: Zone, body: ReviewIn, actor: str) -> ReviewO
     affected = 0
 
     if body.decision == "approve":
+        missing = unacknowledged(db, zone, body.acknowledge_unprovable)
+        if missing:
+            raise AcknowledgementRequired(
+                "this zone holds proposals every monitor accepted but could not fully "
+                "check. Approving them means accepting the checks this model cannot "
+                "answer. List each one in acknowledge_unprovable.",
+                {"unacknowledged": missing},
+            )
+
         path = Path(get_settings().artifacts_dir) / "review" / zone.id / "change_set.json"
         change_set_ref = str(path) if path.exists() else None
         for clash in clashes:
-            if clash.state != "verified":
+            if clash.state not in ("verified", "verified_conditional"):
                 continue
+            conditional = clash.state == "verified_conditional"
             transition(
                 db, clash, entity="clash", to_state="approved", allowed=CLASH_STATES,
-                actor=actor, payload={"review": "approve"},
+                actor=actor,
+                payload={
+                    "review": "approve",
+                    "verification": "conditional" if conditional else "full",
+                    "acknowledged": body.acknowledge_unprovable if conditional else [],
+                },
             )
             transition(
                 db, clash, entity="clash", to_state="merged", allowed=CLASH_STATES,
                 actor=actor, payload={"review": "approve", "branch": zone.branch},
             )
             affected += 1
+            if conditional:
+                approved_conditionally += 1
+            else:
+                approved_fully += 1
         transition(
             db, zone, entity="zone", to_state="merged", allowed=ZONE_STATES, actor=actor,
-            payload={"decision": "approve", "clashes_merged": affected, "change_set": change_set_ref},
+            payload={
+                "decision": "approve",
+                "clashes_merged": affected,
+                "approved_fully": approved_fully,
+                "approved_conditionally": approved_conditionally,
+                "acknowledged": body.acknowledge_unprovable,
+                "change_set": change_set_ref,
+            },
         )
 
     elif body.decision == "reject":
         for clash in clashes:
-            if clash.state not in ("verified", "proposed"):
+            if clash.state not in ("verified", "verified_conditional", "proposed"):
                 continue
             transition(
                 db, clash, entity="clash", to_state="open", allowed=CLASH_STATES, actor=actor,
@@ -205,4 +273,7 @@ def apply_review(db: Session, zone: Zone, body: ReviewIn, actor: str) -> ReviewO
         clashes_affected=affected,
         change_set_ref=change_set_ref,
         re_monitored=re_monitored,
+        approved_fully=approved_fully,
+        approved_conditionally=approved_conditionally,
+        acknowledged=list(body.acknowledge_unprovable),
     )

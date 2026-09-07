@@ -29,11 +29,23 @@ from typing import Any
 
 from app.agents.results import ProposalOutcome, ZoneResult
 from app.blocks import clash_resolver
-from app.monitors import ALL_MONITORS, MonitorContext, run_all
+from app.monitors import (
+    ALL_MONITORS,
+    VERDICT_FAIL,
+    VERDICT_PASS,
+    MonitorContext,
+    run_all,
+    unprovable_across,
+)
 
 log = logging.getLogger(__name__)
 
 VERDICT_VERIFIED = "verified"
+#: Every monitor accepted the move, but the model could not answer at least one
+#: of their checks. It is not a rejection and it is not a verification, and it
+#: must never be spent as either -- a reviewer approving one is accepting the
+#: named gaps, not being told there were none.
+VERDICT_CONDITIONAL = "verified_conditional"
 VERDICT_REJECTED = "rejected"
 VERDICT_ESCALATED = "escalated"
 VERDICT_FLAGGED = "flagged_unsourced"
@@ -169,8 +181,16 @@ class ZoneResolver:
                 store=self.store,
                 stream=self.stream,
             )
-            passed, results = run_all(self.monitors, ctx)
+            monitor_verdict, results = run_all(self.monitors, ctx)
             monitors_payload = {name: r.as_dict() for name, r in results.items()}
+            unprovable = unprovable_across(results)
+
+            if monitor_verdict == VERDICT_PASS:
+                proposal_verdict = VERDICT_VERIFIED
+            elif monitor_verdict == VERDICT_FAIL:
+                proposal_verdict = VERDICT_REJECTED
+            else:
+                proposal_verdict = VERDICT_CONDITIONAL
 
             outcome = ProposalOutcome(
                 clash_id=clash.id,
@@ -178,14 +198,15 @@ class ZoneResolver:
                 element_gid=element.global_id,
                 move_type=move_type,
                 vector_mm=as_vector3(vector),
-                verdict=VERDICT_VERIFIED if passed else VERDICT_REJECTED,
+                verdict=proposal_verdict,
                 attempt=attempt,
                 monitors=monitors_payload,
                 rule_ids=[rule_id] if rule_id else [],
                 clause_text=clause,
+                unprovable_checks=unprovable,
             )
 
-            if passed:
+            if monitor_verdict != VERDICT_FAIL:
                 outcome.rejected_attempts = rejected_attempts
                 if getattr(clash, "owner", "zone") == "coordinator":
                     # Verified locally, but the element is shared. The
@@ -198,7 +219,7 @@ class ZoneResolver:
                 return outcome
 
             objections = {
-                name: r.reason for name, r in results.items() if not r.passed
+                name: r.reason for name, r in results.items() if r.failed
             }
             rejected_attempts.append(
                 {
@@ -347,6 +368,8 @@ class ZoneResolver:
                 result.handed_to_coordinator += 1
             elif outcome.verdict == VERDICT_VERIFIED:
                 result.verified += 1
+            elif outcome.verdict == VERDICT_CONDITIONAL:
+                result.verified_conditional += 1
             elif outcome.verdict == VERDICT_FLAGGED:
                 result.flagged_unsourced += 1
             else:

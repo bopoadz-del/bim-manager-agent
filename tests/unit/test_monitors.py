@@ -46,15 +46,20 @@ def _ctx(model, gid, vector, **kw):
 
 # -- the three-valued check -----------------------------------------------
 def test_unprovable_is_not_a_pass():
+    """The name was always right; the assertion used to contradict it.
+
+    This test previously asserted `passed is True` for a monitor with an
+    unanswered check -- which is precisely the collapse it claims to guard
+    against. See tests/unit/test_conditional_verdict.py.
+    """
     result = MonitorResult.from_checks(
         "x", [Check("a", PASS, "fine"), Check("b", UNPROVABLE, "no data")]
     )
-    assert result.passed is True
+    assert result.passed is False
+    assert result.conditional is True
+    assert result.acceptable is True
     assert result.unprovable_checks == ["b"]
-    assert "not provable" in result.reason, (
-        "a monitor that could not check something must say so in its reason, "
-        "or a reader takes 'passed' to mean 'checked'"
-    )
+    assert "cannot answer" in result.reason
 
 
 def test_any_failure_fails_the_monitor():
@@ -62,6 +67,7 @@ def test_any_failure_fails_the_monitor():
         "x", [Check("a", PASS, "fine"), Check("b", FAIL, "broken"), Check("c", FAIL, "also")]
     )
     assert result.passed is False
+    assert result.acceptable is False
     assert "broken" in result.reason and "also" in result.reason
 
 
@@ -82,8 +88,8 @@ def test_run_all_runs_every_monitor_even_after_one_fails(model):
             return super().run(ctx)
 
     gid = model.elements[0].global_id
-    passed, results = run_all([Boom(), Counting()], _ctx(model, gid, (10.0, 0.0, 0.0)))
-    assert passed is False
+    verdict, results = run_all([Boom(), Counting()], _ctx(model, gid, (10.0, 0.0, 0.0)))
+    assert verdict == "fail"
     assert calls, (
         "a later monitor was skipped after an earlier failure; the resolver needs "
         "every objection at once or it burns attempts discovering them one by one"
@@ -135,6 +141,7 @@ def test_boundary_passes_when_there_are_no_neighbours(model):
     result = BoundaryMonitor().run(_ctx(model, gid, (50.0, 0.0, 0.0)))
     assert result.passed is True
     assert any("no neighbouring zones" in c.detail for c in result.checks)
+    assert result.unprovable_checks == []
 
 
 def test_boundary_marks_head_currency_unprovable_without_a_store(model):
@@ -175,7 +182,7 @@ def test_boundary_judges_neighbours_at_their_committed_positions(model, tmp_path
     check = next(c for c in result.checks if c.name == "neighbour_heads_current")
     assert check.status == PASS
     assert result.evidence["neighbour_elements_displaced"] == 1
-    assert result.passed is True
+    assert result.acceptable is True
 
 
 # -- integrity -------------------------------------------------------------

@@ -170,6 +170,9 @@ def upload_model(
         joints_excluded=result.joints_excluded,
         pairs_admitted=result.pairs_admitted,
         boundary_owned=result.boundary_owned,
+        proposals_verified=result.proposals_verified,
+        proposals_conditional=result.proposals_conditional,
+        provable_check_ratio=result.provable_check_ratio,
     )
 
 
@@ -281,6 +284,7 @@ def list_proposals(
             monitor_geometry=p.monitor_geometry,
             monitor_boundary=p.monitor_boundary,
             monitor_integrity=p.monitor_integrity,
+            unprovable_checks=list(p.unprovable_checks or []),
             created_at=p.created_at,
         )
         for p in rows
@@ -389,13 +393,35 @@ def health(db: Session = Depends(get_db)) -> HealthOut:
         lock = json.loads(lock_path.read_text(encoding="utf-8"))
         vendored = {"pinned": True, "sha": lock["sha"], "files": len(lock["files"])}
 
+    # The most recent run's ratio, so an operator can see at a glance how much of
+    # what this service last reported as accepted was actually checkable.
+    ratio = None
+    try:
+        latest = db.execute(
+            select(ModelVersion).order_by(ModelVersion.ingested_at.desc()).limit(1)
+        ).scalars().first()
+        if latest is not None:
+            ratio = (latest.stats or {}).get("verdicts", {}).get("provable_check_ratio")
+    except Exception:  # a health endpoint must not fail on a reporting extra
+        ratio = None
+
     return HealthOut(
         status="ok" if database == "ok" else "degraded",
         build_sha=settings.build_sha,
+        provable_check_ratio=ratio,
         database=database,
         store=store_status(settings),
         exact_geometry_backend=exact_backend_available(),
         vendored_kit=vendored,
+        verification={
+            "verdicts": ["verified", "verified_conditional"],
+            "note": (
+                "verified means every check of all three monitors passed. "
+                "verified_conditional means no monitor objected and at least one "
+                "check could not be answered by the model; approving one requires "
+                "acknowledging each unanswered check by name."
+            ),
+        },
     )
 
 

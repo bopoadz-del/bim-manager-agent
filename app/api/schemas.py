@@ -44,6 +44,9 @@ class IngestOut(BaseModel):
     joints_excluded: int
     pairs_admitted: int
     boundary_owned: int
+    proposals_verified: int = 0
+    proposals_conditional: int = 0
+    provable_check_ratio: float | None = None
 
 
 class ZoneOut(BaseModel):
@@ -90,6 +93,9 @@ class ProposalOut(BaseModel):
     monitor_geometry: dict[str, Any] | None
     monitor_boundary: dict[str, Any] | None
     monitor_integrity: dict[str, Any] | None
+    #: Empty for a full verification. For a conditional one, exactly the list a
+    #: reviewer must acknowledge to approve it.
+    unprovable_checks: list[str] = Field(default_factory=list)
     created_at: datetime
 
 
@@ -105,6 +111,11 @@ class ReviewIn(BaseModel):
     reviewer: str = Field(min_length=1, max_length=120)
     notes: str | None = None
     edits: list[ReviewEdit] = Field(default_factory=list)
+    #: Every unanswered check the reviewer accepts, as "monitor.check".
+    #: Required to approve a zone holding conditional verifications, and it must
+    #: name all of them: a blanket "yes" would be the same rubber stamp the
+    #: conditional verdict exists to prevent.
+    acknowledge_unprovable: list[str] = Field(default_factory=list)
 
 
 class ReviewOut(BaseModel):
@@ -114,6 +125,9 @@ class ReviewOut(BaseModel):
     clashes_affected: int
     change_set_ref: str | None
     re_monitored: list[dict[str, Any]] = Field(default_factory=list)
+    approved_fully: int = 0
+    approved_conditionally: int = 0
+    acknowledged: list[str] = Field(default_factory=list)
 
 
 class DiffOut(BaseModel):
@@ -133,3 +147,8 @@ class HealthOut(BaseModel):
     store: dict[str, Any]
     exact_geometry_backend: bool
     vendored_kit: dict[str, Any]
+    verification: dict[str, Any]
+    #: Of every check every monitor ran on the most recent model version, the
+    #: fraction this model could actually answer. None before the first run.
+    provable_check_ratio: float | None = None
+

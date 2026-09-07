@@ -66,6 +66,18 @@ class UnprocessableModel(ApiError):
     code = "unprocessable_model"
 
 
+class AcknowledgementRequired(ApiError):
+    """A conditional verification cannot be approved blind.
+
+    422 rather than 400: the request is well-formed and the caller may well be
+    entitled to make it. What is missing is the reviewer stating, item by item,
+    which unanswered checks they are accepting responsibility for.
+    """
+
+    status_code = 422
+    code = "acknowledgement_required"
+
+
 class DependencyUnavailable(ApiError):
     status_code = 503
     code = "dependency_unavailable"

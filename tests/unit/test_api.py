@@ -166,30 +166,67 @@ def test_the_full_upload_and_review_round_trip(client, db, project):
 
     clashes = client.get(f"/zones/{zone_id}/clashes").json()
     assert clashes, "the fixture has clashes; the API returned none"
-    assert all(c["state"] in ("open", "proposed", "verified", "escalated") for c in clashes)
+    assert all(
+        c["state"] in ("open", "proposed", "verified", "verified_conditional", "escalated")
+        for c in clashes
+    )
 
     proposals = client.get(f"/zones/{zone_id}/proposals").json()
     assert proposals
-    verified = [p for p in proposals if p["verdict"] == "verified"]
-    for p in verified:
-        assert p["monitor_geometry"]["passed"] is True
-        assert p["monitor_boundary"]["passed"] is True
-        assert p["monitor_integrity"]["passed"] is True
+    accepted = [
+        p for p in proposals if p["verdict"] in ("verified", "verified_conditional")
+    ]
+    assert accepted
+    for p in accepted:
+        for field in ("monitor_geometry", "monitor_boundary", "monitor_integrity"):
+            assert p[field]["verdict"] != "fail"
+        # These fixtures carry no ports and no access table, so integrity cannot
+        # answer two of its checks and the verdict must say so rather than
+        # rounding up to a full verification.
+        if p["verdict"] == "verified_conditional":
+            assert p["unprovable_checks"], "a conditional must name what it could not check"
+        else:
+            assert p["unprovable_checks"] == []
 
     change_set = client.get(f"/zones/{zone_id}/change_set.json")
     assert change_set.status_code == 200
-    assert "entries" in change_set.json()
+    payload = change_set.json()
+    assert "entries" in payload
+    summary = payload["verification_summary"]
+    assert summary["entries"] == len(payload["entries"])
+    assert summary["fully_verified"] + summary["conditionally_verified"] == summary["entries"]
+    for entry in payload["entries"]:
+        assert entry["verification"] in ("full", "conditional")
 
     bcf = client.get(f"/zones/{zone_id}/bcf.zip")
     assert bcf.status_code == 200
     assert bcf.content[:2] == b"PK", "BCF must be a real zip"
 
+    # Approving a zone with conditional verifications requires naming each
+    # unanswered check; a blank approval is refused.
+    blind = client.post(
+        f"/zones/{zone_id}/review",
+        json={"decision": "approve", "reviewer": "an engineer"},
+    )
+    outstanding: list[str] = []
+    if blind.status_code == 422:
+        assert blind.json()["code"] == "acknowledgement_required"
+        outstanding = blind.json()["detail"]["unacknowledged"]
+        assert outstanding
+
     approved = client.post(
         f"/zones/{zone_id}/review",
-        json={"decision": "approve", "reviewer": "an engineer", "notes": "looks right"},
+        json={
+            "decision": "approve",
+            "reviewer": "an engineer",
+            "notes": "looks right",
+            "acknowledge_unprovable": outstanding,
+        },
     )
     assert approved.status_code == 200, approved.text
-    assert approved.json()["zone_status"] == "merged"
+    review = approved.json()
+    assert review["zone_status"] == "merged"
+    assert review["acknowledged"] == outstanding
 
     # And the original file is untouched.
     from app.blocks.ifc_loader import model_sha256

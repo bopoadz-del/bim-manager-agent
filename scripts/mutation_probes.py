@@ -39,8 +39,8 @@ PROBES = [
     Probe(
         name="arbitration_commits_on_a_single_zone_pass",
         target="app/agents/coordinator.py",
-        find="            all_passed = all_passed and passed",
-        replace="            all_passed = True  # MUTANT",
+        find="        if any(v == VERDICT_FAIL for v in zone_verdicts.values()):",
+        replace="        if False:  # MUTANT",
         tests=["tests/unit/test_arbitration.py"],
         breaks="a boundary move one zone rejected would be committed anyway",
     ),
@@ -102,6 +102,22 @@ PROBES = [
         replace="        .order_by(LedgerEvent.ts)  # MUTANT",
         tests=["tests/unit/test_guards.py::test_history_is_ordered_by_sequence_not_by_clock"],
         breaks="events written in the same microsecond come back in arbitrary order",
+    ),
+    Probe(
+        name="conditional_is_promoted_to_verified",
+        target="app/agents/zone_resolver.py",
+        find="                proposal_verdict = VERDICT_CONDITIONAL",
+        replace="                proposal_verdict = VERDICT_VERIFIED  # MUTANT",
+        tests=["tests/unit/test_conditional_verdict.py"],
+        breaks="a proposal with checks nobody could run would be reported as fully verified",
+    ),
+    Probe(
+        name="unprovable_counts_as_a_pass_in_the_aggregate",
+        target="app/monitors/base.py",
+        find="    if all(r.passed for r in results.values()):",
+        replace="    if all(r.acceptable for r in results.values()):  # MUTANT",
+        tests=["tests/unit/test_conditional_verdict.py"],
+        breaks="'we could not check this' would aggregate as 'we checked and it passed'",
     ),
     Probe(
         name="vendored_kit_drift_goes_unnoticed",

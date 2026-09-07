@@ -11,5 +11,13 @@
     "pinned": true,
     "sha": "5c0711a066b6eef5e0861cbfa0d793972b719c83",
     "files": 15
-  }
+  },
+  "verification": {
+    "verdicts": [
+      "verified",
+      "verified_conditional"
+    ],
+    "note": "verified means every check of all three monitors passed. verified_conditional means no monitor objected and at least one check could not be answered by the model; approving one requires acknowledging each unanswered check by name."
+  },
+  "provable_check_ratio": null
 }

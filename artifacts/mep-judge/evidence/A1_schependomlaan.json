@@ -7,7 +7,13 @@
   "joints_excluded": 2,
   "pairs_admitted": 80,
   "pairs_possible": 1031766,
-  "verified_proposals": 7,
+  "proposals_verified": 0,
+  "proposals_conditional": 7,
+  "provable_check_ratio": 0.7778,
+  "unprovable_checks": [
+    "integrity.access_preserved",
+    "integrity.still_connected"
+  ],
   "boundary_owned": 7,
   "rules_never_applied": [
     {

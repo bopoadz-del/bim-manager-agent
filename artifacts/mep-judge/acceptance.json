@@ -1,0 +1,186 @@
+{
+  "passed": 5,
+  "total": 30,
+  "results": [
+    {
+      "code": "A01",
+      "title": "three-valued verdict, unprovable never a pass",
+      "passed": true,
+      "evidence": "unprovable->conditional passed=False; all-pass->pass; aggregate(pass,conditional)->conditional"
+    },
+    {
+      "code": "A02",
+      "title": "Schependomlaan: verified 0 / verified_conditional 7",
+      "passed": true,
+      "evidence": "verified=0 verified_conditional=7 connectivity+access named on every conditional=True"
+    },
+    {
+      "code": "A03",
+      "title": "approving a conditional needs the full acknowledgement; deliverables carry it",
+      "passed": true,
+      "evidence": "blind approval refused=True acknowledged approval accepted=True change_set carries verification=True BCF topic carries verification=True"
+    },
+    {
+      "code": "A04",
+      "title": "provable_check_ratio reported in /health and A1 evidence",
+      "passed": true,
+      "evidence": "ingest ratio=0.7778 model_version.stats=0.7778 present in /health=True"
+    },
+    {
+      "code": "A05",
+      "title": "public_seed_rules.json: >=8 cited rules validating against the kit schema",
+      "passed": false,
+      "evidence": "not built yet: app/rules/public_seed_rules.json"
+    },
+    {
+      "code": "A06",
+      "title": "bilingual aliases default; Schependomlaan yields a clearance finding",
+      "passed": false,
+      "evidence": "raised ImportError: cannot import name 'DEFAULT_ALIASES' from 'app.kit.systems' (C:\\Users\\shimm\\mep-judge\\app\\kit\\systems.py)"
+    },
+    {
+      "code": "A07",
+      "title": "a rule without a citation is refused at load",
+      "passed": false,
+      "evidence": "refused with RuleWithoutCitation; citation probe=absent or still a control"
+    },
+    {
+      "code": "A08",
+      "title": "LLM-extracted rules are pending until a reviewer approves each",
+      "passed": false,
+      "evidence": "not built yet: app/rules/approval.py (extraction approval path + ledger record)"
+    },
+    {
+      "code": "A09",
+      "title": "per-clash method and penetration persisted; A1 reports clashes_by_method",
+      "passed": false,
+      "evidence": "not built yet: Clash.method / Clash.penetration_mm"
+    },
+    {
+      "code": "A10",
+      "title": "watertight solid measures exact_boolean; non-watertight says surface_intersection",
+      "passed": false,
+      "evidence": "not built yet: watertight cylinder-through-slab fixture"
+    },
+    {
+      "code": "A11",
+      "title": "backout distance is mesh-derived when the method is exact",
+      "passed": false,
+      "evidence": "not built yet: mesh-derived backout"
+    },
+    {
+      "code": "A12",
+      "title": "connectivity is provable when the model carries ports",
+      "passed": true,
+      "evidence": "ports=2 500mm->fail 0.1mm->pass absent from unprovable list=True"
+    },
+    {
+      "code": "A13",
+      "title": "a second public model, IFC4, runs the pipeline with pinned counts",
+      "passed": false,
+      "evidence": "not built yet: pinned expected counts for the second model"
+    },
+    {
+      "code": "A14",
+      "title": "upload returns 202 and the pipeline runs in the worker",
+      "passed": false,
+      "evidence": "not built yet: async ingest (202 + arq worker)"
+    },
+    {
+      "code": "A15",
+      "title": "the API refuses to start without Redis unless explicitly synchronous",
+      "passed": false,
+      "evidence": "not built yet: MEPJ_SYNC_PIPELINE guard"
+    },
+    {
+      "code": "A16",
+      "title": "every review transition is covered",
+      "passed": false,
+      "evidence": "not built yet: tests/unit/test_review.py"
+    },
+    {
+      "code": "A17",
+      "title": "a boundary commit invalidates a neighbour proposal and re-monitors it",
+      "passed": false,
+      "evidence": "state_path=['open', 'verified_conditional', 'proposed'] objections=1 survived_rebase=None"
+    },
+    {
+      "code": "A18",
+      "title": "version diff pinned on fixtures and on a real-model re-upload",
+      "passed": false,
+      "evidence": "not built yet: real-model re-upload diff evidence"
+    },
+    {
+      "code": "A19",
+      "title": "BCF validates against the buildingSMART 2.1 schema",
+      "passed": false,
+      "evidence": "not built yet: vendored BCF-XML 2.1 XSDs"
+    },
+    {
+      "code": "A20",
+      "title": "change_set schema published in openapi.json",
+      "passed": false,
+      "evidence": "not built yet: ChangeSet component in openapi.json"
+    },
+    {
+      "code": "A21",
+      "title": "boot refuses the default key; hashes salted; rotation invalidates",
+      "passed": false,
+      "evidence": "not built yet: salted key hashes + rotation"
+    },
+    {
+      "code": "A22",
+      "title": "upload guarded by rate limit, size cap and magic header",
+      "passed": false,
+      "evidence": "raised ImportError: cannot import name 'guards' from 'app.api' (C:\\Users\\shimm\\mep-judge\\app\\api\\__init__.py)"
+    },
+    {
+      "code": "A23",
+      "title": "the ledger is append-only at the database level",
+      "passed": false,
+      "evidence": "not built yet: database-level append-only enforcement"
+    },
+    {
+      "code": "A24",
+      "title": "/health reports build, kit pin, db, store, redis and the last ratio",
+      "passed": false,
+      "evidence": "/health keys missing=['migrations', 'redis']"
+    },
+    {
+      "code": "A25",
+      "title": "the store is selectable and local is complete on its own",
+      "passed": false,
+      "evidence": "not built yet: MEPJ_STORE=local|speckle"
+    },
+    {
+      "code": "A26",
+      "title": "LLM prose never reaches a decision field",
+      "passed": false,
+      "evidence": "not built yet: narrative fake-client coverage + decision-field assertion"
+    },
+    {
+      "code": "A27",
+      "title": "the review UI shows verdicts and gates conditional approval",
+      "passed": false,
+      "evidence": "ui markers missing=['verified_conditional', 'acknowledge_unprovable'] playwright spec=absent"
+    },
+    {
+      "code": "A28",
+      "title": "CI runs every gate including acceptance",
+      "passed": false,
+      "evidence": "ci steps missing=['acceptance.py', 'bcf']"
+    },
+    {
+      "code": "A29",
+      "title": "docs regenerated from acceptance output",
+      "passed": false,
+      "evidence": "not built yet: ACCEPTANCE_TABLE.md generated from this harness"
+    },
+    {
+      "code": "A30",
+      "title": "release: clean install, compose health, tagged v1.0.0",
+      "passed": false,
+      "evidence": "not built yet: v1.0.0 tag"
+    }
+  ]
+}
