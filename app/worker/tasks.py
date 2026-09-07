@@ -45,6 +45,8 @@ async def resolve_zone(ctx: dict, zone_id: str) -> dict[str, Any]:
         if zone is None:
             return {"error": "zone_not_found", "id": zone_id}
         mv = db.get(ModelVersion, zone.model_version_id)
+        if mv is None:
+            return {"error": "model_version_not_found", "id": zone.model_version_id}
         coordinator = Coordinator(db)
         model = load_model(mv.ifc_path, cache_dir=coordinator._cache_dir(), aliases_path=mv.aliases_path)
         return coordinator.resolve_zone(zone, model, load_project_rules()).as_dict()
@@ -75,6 +77,8 @@ async def arbitrate(ctx: dict, clash_id: str) -> dict[str, Any]:
         if clash is None:
             return {"error": "clash_not_found", "id": clash_id}
         mv = db.get(ModelVersion, clash.model_version_id)
+        if mv is None:
+            return {"error": "model_version_not_found", "id": clash.model_version_id}
         coordinator = Coordinator(db)
         model = load_model(mv.ifc_path, cache_dir=coordinator._cache_dir(), aliases_path=mv.aliases_path)
         return coordinator.arbitrate(clash, model, load_project_rules()).as_dict()

@@ -37,7 +37,9 @@ app = FastAPI(
     ],
 )
 
-app.add_exception_handler(ApiError, api_error_handler)
+# Starlette types its handler registry against bare Exception; the handler is
+# narrower on purpose, and only ever receives what it is registered for.
+app.add_exception_handler(ApiError, api_error_handler)  # type: ignore[arg-type]
 app.include_router(router)
 
 _UI_DIR = Path(__file__).resolve().parent.parent / "ui" / "static"

@@ -589,6 +589,10 @@ class Coordinator:
             )
 
         mv = self.session.get(ModelVersion, clash.model_version_id)
+        if mv is None:
+            return ArbitrationResult(
+                clash.id, False, "the model version this clash belongs to no longer exists"
+            )
         vector = as_vector3(proposal.move_vector)
         monitors_payload: dict[str, dict] = {}
         all_passed = True
@@ -922,11 +926,18 @@ class Coordinator:
                 .where(Clash.model_version_id == previous.id, Proposal.verdict == "verified")
             ).scalars()
         )
-        clash_keys = {
-            p.id: self.session.get(Clash, p.clash_id).clash_key for p in prior
-        }
+        clash_keys: dict[str, str] = {}
+        for proposal in prior:
+            owning = self.session.get(Clash, proposal.clash_id)
+            if owning is not None:
+                clash_keys[proposal.id] = owning.clash_key
         scored = version_diff.score_proposals(
-            [_KitProposal(clash_id=clash_keys[p.id], element=p.element_gid) for p in prior], diff
+            [
+                _KitProposal(clash_id=clash_keys[p.id], element=p.element_gid)
+                for p in prior
+                if p.id in clash_keys
+            ],
+            diff,
         )
 
         resolved_ids = {e["clash_id"] for e in diff["resolved"]}
